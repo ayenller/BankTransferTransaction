@@ -18,7 +18,8 @@
 + ├── run_transfers.py       # 转账交易运行脚本
 + ├── requirements.txt       # Python 依赖包
 + └── README.md              # 项目说明文件
-+ ```
++
+```
 
 ## 环境要求
 
