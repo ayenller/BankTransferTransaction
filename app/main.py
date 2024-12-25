@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 # 添加项目根目录到Python路径
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +16,14 @@ from app.logger import setup_logger
 def execute_random_transfers(num_transfers=10):
     """执行随机转账交易"""
     setup_logger()
+    
+    # 只在第一次调用时打印表头
+    if not hasattr(execute_random_transfers, 'header_printed'):
+        print("\n开始执行转账交易...")
+        print("-" * 100)
+        print("时间                        交易状态    发送方              接收方              金额        发送方余额变更              转出方余额变更")
+        print("-" * 100)
+        execute_random_transfers.header_printed = True
     
     try:
         with get_cursor() as (cursor, conn):
@@ -32,23 +41,13 @@ def execute_random_transfers(num_transfers=10):
             successful_transfers = 0
             failed_transfers = 0
             
-            print("\n开始执行转账交易...")
-            print("-" * 50)
-            
             for i in range(num_transfers):
                 # 随机选择转出和转入账户
                 sender, receiver = random.sample(accounts, 2)
-                # 随机生成转账金额（10-1000之间，且为10的倍数）
-                amount = Decimal(str(random.randrange(1, 101) * 10)).quantize(Decimal('0.00'))
+                # 随机生成转账金额（100-1000之间，且为100的倍数）
+                amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
                 
-                print(f"\n转账 #{i+1}:")
-                print(f"转账详情:")
-                print(f"  发送方: {sender['account_name']}(ID:{sender['account_id']})")
-                print(f"  接收方: {receiver['account_name']}(ID:{receiver['account_id']})")
-                print(f"  转账金额: {amount} 元")
-                print(f"  转账前余额:")
-                print(f"    {sender['account_name']}: {sender['balance']} 元")
-                print(f"    {receiver['account_name']}: {receiver['balance']} 元")
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
                 
                 # 执行转账
                 success, message = transfer_amount(
@@ -59,8 +58,6 @@ def execute_random_transfers(num_transfers=10):
                     conn
                 )
                 
-                print(f"转账结果: {message}")
-                
                 # 获取转账后的余额
                 if success:
                     cursor.execute("""
@@ -70,40 +67,24 @@ def execute_random_transfers(num_transfers=10):
                     """, (sender['account_id'], receiver['account_id']))
                     updated_balances = cursor.fetchall()
                     
-                    print(f"  转账后余额:")
-                    for account in updated_balances:
-                        print(f"    {account['account_name']}: {account['balance']} 元")
-                    
-                    # 更新本地账户数据，用于下一次转账
-                    for account in accounts:
-                        if account['account_id'] == sender['account_id']:
-                            account['balance'] = updated_balances[0]['balance']
-                        elif account['account_id'] == receiver['account_id']:
-                            account['balance'] = updated_balances[1]['balance']
+                    status = "成功"
+                    sender_balance_after = updated_balances[0]['balance']
+                    receiver_balance_after = updated_balances[1]['balance']
+                else:
+                    status = "失败"
+                    sender_balance_after = sender['balance']
+                    receiver_balance_after = receiver['balance']
+                
+                # 单行格式输出
+                print(f"{current_time}  {status:<8} {sender['account_name']:<18} {receiver['account_name']:<18} "
+                      f"{amount:>8.2f} 元  "
+                      f"{sender['balance']:>8.2f}->{sender_balance_after:<8.2f} "
+                      f"{receiver['balance']:>8.2f}->{receiver_balance_after:<8.2f}")
                 
                 if success:
                     successful_transfers += 1
                 else:
                     failed_transfers += 1
-            
-            print("\n" + "=" * 50)
-            print(f"转账统计:")
-            print(f"总计执行: {num_transfers} 笔")
-            print(f"成功: {successful_transfers} 笔")
-            print(f"失败: {failed_transfers} 笔")
-            
-            # 显示所有账户的当前余额
-            print("\n当前账户余额:")
-            print("-" * 50)
-            cursor.execute("""
-                SELECT account_name, balance 
-                FROM banking_system.accounts 
-                ORDER BY account_id
-                LIMIT 5
-            """)
-            for account in cursor.fetchall():
-                print(f"{account['account_name']}: {account['balance']} 元")
-            print("... (更多账户省略)")
             
     except Exception as e:
         print(f"执行转账时发生错误: {str(e)}")

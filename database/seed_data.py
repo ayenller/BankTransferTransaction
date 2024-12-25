@@ -17,8 +17,8 @@ def seed_accounts(cursor, num_accounts=100):
     accounts_data = []
     for i in range(num_accounts):
         account = (
-            f"用户_{i+1}",  # account_name
-            Decimal(str(random.uniform(1000.00, 10000.00))).quantize(Decimal('0.00'))  # balance
+            f"user_{i+1:02d}",  # account_name，使用两位数字格式
+            Decimal(str(random.randrange(10, 101) * 100)).quantize(Decimal('0.00'))  # balance，1000-10000之间的100的倍数
         )
         accounts_data.append(account)
     
@@ -54,7 +54,7 @@ def seed_transactions(cursor, num_transactions=100):
         transaction = (
             sender_id,  # sender_id
             receiver_id,  # receiver_id
-            Decimal(str(random.uniform(10.00, 1000.00))).quantize(Decimal('0.00')),  # amount
+            Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00')),  # amount，100-1000之间的100的倍数
             random.choice(['SUCCESS', 'FAILURE'])  # status
         )
         transactions_data.append(transaction)
