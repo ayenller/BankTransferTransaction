@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from config.config import LOG_CONFIG
 
 def setup_logger():
@@ -9,11 +10,18 @@ def setup_logger():
         level=logging.INFO
     )
 
-def log_transaction(sender_id, receiver_id, amount, status, reason=None):
-    message = f"交易 {status}: 发送方={sender_id}, 接收方={receiver_id}, 金额={amount:.2f}"
+def log_transaction(sender_id, receiver_id, amount, status, sender_balance_before=None, 
+                   receiver_balance_before=None, sender_balance_after=None, 
+                   receiver_balance_after=None, reason=None):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    message = (f"交易 {status}: "
+              f"发送方={sender_id}(余额: {sender_balance_before:.2f}->{sender_balance_after:.2f}), "
+              f"接收方={receiver_id}(余额: {receiver_balance_before:.2f}->{receiver_balance_after:.2f}), "
+              f"金额={amount:.2f}")
     if reason:
         message += f" - 原因: {reason}"
-    logging.info(message)
+    logging.info(f"[{current_time}] {message}")
 
 def log_error(message):
-    logging.error(message) 
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    logging.error(f"[{current_time}] {message}") 
