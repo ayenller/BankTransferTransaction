@@ -7,7 +7,7 @@ def get_db_connection():
         conn = mysql.connector.connect(**DATABASE_CONFIG)
         return conn
     except mysql.connector.Error as err:
-        raise Exception(f"数据库连接失败: {err}")
+        raise Exception(f"Database connection failed: {err}")
 
 @contextmanager
 def get_cursor():

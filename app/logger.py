@@ -13,15 +13,15 @@ def setup_logger():
 def log_transaction(sender_id, receiver_id, amount, status, sender_balance_before=None, 
                    receiver_balance_before=None, sender_balance_after=None, 
                    receiver_balance_after=None, reason=None):
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-    message = (f"交易 {status}: "
-              f"发送方={sender_id}(余额: {sender_balance_before:.2f}->{sender_balance_after:.2f}), "
-              f"接收方={receiver_id}(余额: {receiver_balance_before:.2f}->{receiver_balance_after:.2f}), "
-              f"金额={amount:.2f}")
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    message = (f"Transaction {status}: "
+              f"Sender={sender_id}(Balance: {sender_balance_before:.2f}->{sender_balance_after:.2f}), "
+              f"Receiver={receiver_id}(Balance: {receiver_balance_before:.2f}->{receiver_balance_after:.2f}), "
+              f"Amount={amount:.2f}")
     if reason:
-        message += f" - 原因: {reason}"
+        message += f" - Reason: {reason}"
     logging.info(f"[{current_time}] {message}")
 
 def log_error(message):
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logging.error(f"[{current_time}] {message}") 

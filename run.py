@@ -11,4 +11,4 @@ from database.db_connection import get_cursor
 if __name__ == "__main__":
     with get_cursor() as (cursor, conn):
         create_tables(cursor)
-        print("数据库表创建成功！") 
+        print("Create database success!") 

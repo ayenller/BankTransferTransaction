@@ -1,135 +1,134 @@
-# 银行转账命令行应用程序
+# Bank Transfer CLI Application
 
-这是一个基于 Python 的银行转账命令行应用程序，使用 TiDB 作为数据库存储。
+A Python-based command-line application for bank transfers using TiDB as the database storage.
 
-## 项目结构
+## Project Structure
 ```
 bank_transfer_cli/
 ├── database/
-│   ├── init_db.py         # 数据库初始化和建表脚本
-│   ├── seed_data.py       # 预埋数据生成脚本
-│   └── db_connection.py   # 数据库连接管理
+│   ├── init_db.py         # Database initialization and table creation
+│   ├── seed_data.py       # Test data generation
+│   └── db_connection.py   # Database connection management
 ├── app/
-│   ├── main.py            # 程序入口，转账交易执行
-│   ├── transfer.py        # 转账操作逻辑
-│   └── logger.py          # 日志管理
+│   ├── main.py            # Main entry, transfer execution
+│   ├── transfer.py        # Transfer logic
+│   └── logger.py          # Logging management
 ├── config/
-│   └── config.py          # 配置文件
-├── run_transfers.py       # 转账交易运行脚本
-├── requirements.txt       # Python 依赖包
-└── README.md              # 项目说明文件
-+
+│   └── config.py          # Configuration file
+├── run_transfers.py       # Transfer execution script
+├── requirements.txt       # Python dependencies
+└── README.md             # Project documentation
 ```
 
-## 环境要求
+## Requirements
 
 - Python 3.8+
-- TiDB 数据库
-- pip 包管理工具
+- TiDB database
+- pip package management tool
 
-## 快速开始
+## Quick Start
 
-### 1. 安装依赖包
+### 1. Install Dependencies
 
-首先创建并激活虚拟环境（推荐）：
+First, create and activate a virtual environment (recommended):
 ```bash
-# 创建虚拟环境
+# Create virtual environment
 python -m venv myenv
 
-# 激活虚拟环境
+# Activate virtual environment
 # Windows:
 myenv\Scripts\activate
 # macOS/Linux:
 source myenv/bin/activate
 ```
 
-安装所需依赖：
+Install required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 配置数据库连接
+### 2. Configure Database Connection
 
-修改 `config/config.py` 文件中的数据库连接参数：
+Modify database connection parameters in `config/config.py`:
 ```python
 DATABASE_CONFIG = {
-    "host": "127.0.0.1",  # 修改为你的 TiDB 主机地址
-    "port": 4000,         # TiDB 端口
-    "user": "root",       # 数据库用户名
-    "database": "banking_system"  # 数据库名称
+    "host": "127.0.0.1",  # Your TiDB host address
+    "port": 4000,         # TiDB port
+    "user": "root",       # Database username
+    "database": "banking_system"  # Database name
 }
 ```
 
-### 3. 初始化数据库
+### 3. Initialize Database
 
-运行以下命令创建数据库和表结构：
+Run the following command to create database and tables:
 ```bash
 python database/init_db.py
 ```
 
-这将创建：
-- banking_system 数据库
-- accounts 表（存储账户信息）
-- transactions 表（存储交易记录）
+This will create:
+- banking_system database
+- accounts table (stores account information)
+- transactions table (stores transaction records)
 
-### 4. 生成测试数据
+### 4. Generate Test Data
 
-运行以下命令生成测试数据：
+Run the following command to generate test data:
 ```bash
 python database/seed_data.py
 ```
 
-这将：
-- 创建 100 个测试账户
-- 生成 100 条随机交易记录
-- 为每个账户设置随机初始余额
+This will:
+- Create 100 test accounts
+- Generate 100 random transaction records
+- Set random initial balances for each account
 
-### 5. 执行转账交易
+### 5. Execute Transfers
 
-运行以下命令执行 10 笔随机转账交易：
+Run the following command to execute random transfers:
 ```bash
 python run_transfers.py
 ```
 
-每笔转账将显示：
-- 转账双方的账户信息
-- 转账金额（10-1000元之间的10的倍数）
-- 转账前后的账户余额
-- 转账结果
+Each transfer will display:
+- Account information for both parties
+- Transfer amount (between 100-1000 CNY, multiples of 100)
+- Account balances before and after transfer
+- Transfer result
 
-### 日志记录
+### Logging
 
-所有转账操作都会记录在 `bank_transfer.log` 文件中，包括：
-- 精确到毫秒的转账时间
-- 转账状态（成功/失败）
-- 转账双方的用户名
-- 转账金额（100-1000之间的100的倍数）
-- 转账双方的余额变更记录
+All transfer operations are logged in `bank_transfer.log`, including:
+- Transfer time (millisecond precision)
+- Transfer status (SUCCESS/FAILED)
+- Usernames of both parties
+- Transfer amount (between 100-1000 CNY, multiples of 100)
+- Balance changes for both parties
 
-日志格式示例：
+Log format example:
 ```
-[2024-03-21 15:30:45.123] INFO: 交易 SUCCESS: 发送方=user_05(余额: 5000.00->4500.00), 接收方=user_12(余额: 3000.00->3500.00), 金额=500.00
-[2024-03-21 15:30:46.456] INFO: 交易 FAILURE: 发送方=user_08(余额: 100.00->100.00), 接收方=user_03(余额: 2000.00->2000.00), 金额=800.00 - 原因: 余额不足
+[2024-03-21 15:30:45.123] INFO: Transaction SUCCESS: Sender=user_05(Balance: 5000.00->4500.00), Receiver=user_12(Balance: 3000.00->3500.00), Amount=500.00
+[2024-03-21 15:30:46.456] INFO: Transaction FAILED: Sender=user_08(Balance: 100.00->100.00), Receiver=user_03(Balance: 2000.00->2000.00), Amount=800.00 - Reason: Insufficient balance
 ```
 
-## 数据一致性验证
+## Data Consistency Verification
 
-系统使用事务确保每笔转账的原子性，可以通过以下 SQL 在任意时刻验证系统的数据一致性：
+The system uses transactions to ensure atomicity of each transfer. You can verify system data consistency at any time using the following SQL:
 
 ```sql
--- 查询系统总余额
+-- Query total system balance
 SELECT SUM(balance) as total_balance FROM banking_system.accounts;
 ```
 
-由于每笔转账都是在同一个事务中完成转出和转入操作，因此：
-1. 系统总余额在任意时刻都应该保持不变
-2. 总余额等于所有账户初始余额之和
-3. 失败的转账不会影响系统总余额
+Since each transfer completes both debit and credit operations in a single transaction:
+1. Total system balance should remain constant at all times
+2. Total balance equals the sum of all initial account balances
+3. Failed transfers do not affect the system total balance
 
-可以通过以下 SQL 查看转账历史和余额变化：
+You can view transfer history and balance changes using these SQL queries:
 
 ```sql
--- 查看成功的转账记录
+-- View successful transfers
 SELECT t.*, 
        a1.account_name as sender_name, 
        a2.account_name as receiver_name
@@ -140,22 +139,22 @@ WHERE t.status = 'SUCCESS'
 ORDER BY t.created_at DESC
 LIMIT 10;
 
--- 查看账户余额变化
+-- View account balances
 SELECT account_name, balance
 FROM banking_system.accounts
 ORDER BY account_id
 LIMIT 10;
 ```
 
-验证步骤：
-1. 在开始转账测试前记录总余额
-2. 在转账过程中随时可以查询总余额，应与初始值相同
-3. 在所有转账完成后，再次验证总余额
+Verification steps:
+1. Record total balance before starting transfer tests
+2. Query total balance during transfers - should match initial value
+3. Verify total balance again after all transfers complete
 
-## 注意事项
+## Notes
 
-1. 确保 TiDB 数据库已启动并可访问
-2. 账户余额不足时转账将失败
-3. 所有转账操作都在事务中执行，确保数据一致性
-4. 每笔转账都会实时记录到日志文件，便于追踪和审计
-5. 可以通过系统总余额验证数据一致性
+1. Ensure TiDB database is running and accessible
+2. Transfers will fail if account balance is insufficient
+3. All transfer operations execute within transactions to ensure data consistency
+4. Each transfer is logged in real-time for tracking and auditing
+5. System consistency can be verified through total balance checks

@@ -4,7 +4,7 @@ import time
 import argparse
 from datetime import datetime, timedelta
 
-# 添加项目根目录到Python路径
+# Add project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(project_root)
 
@@ -12,19 +12,19 @@ from app.main import execute_random_transfers
 
 def run_timed_transfers(duration_minutes):
     """
-    执行定时转账交易
-    每秒执行5笔转账，持续指定的分钟数
+    Execute timed transfer transactions
+    Execute one transfer per second for the specified duration in minutes
     """
-    # 计算需要执行的总次数
+    # Calculate total number of transfers
     transfers_per_second = 1
     total_seconds = duration_minutes * 60
     total_transfers = total_seconds * transfers_per_second
     
-    # 打印开始信息
-    print(f"\n开始执行定时转账...")
-    print(f"执行时间: {duration_minutes} 分钟")
-    print(f"执行频率: {transfers_per_second} 笔/秒")
-    print(f"总计划执行: {total_transfers} 笔")
+    # Print start information
+    print(f"\nStarting timed transfers...")
+    print(f"Duration: {duration_minutes} minutes")
+    print(f"Frequency: {transfers_per_second} transfers/second")
+    print(f"Total planned transfers: {total_transfers}")
     print("\n" + "=" * 50 + "\n")
     
     start_time = datetime.now()
@@ -37,51 +37,46 @@ def run_timed_transfers(duration_minutes):
     while datetime.now() < end_time:
         now = datetime.now()
         
-        # 如果进入新的一秒，重置计数器
+        # Reset counter when entering a new second
         if now.second != current_second:
             current_second = now.second
             transfers_this_second = 0
         
-        # 如果当前秒内的转账次数未达到限制，执行转账
+        # Execute transfer if not reached the limit for current second
         if transfers_this_second < transfers_per_second:
-            execute_random_transfers(1)  # 每次执行1笔转账
+            execute_random_transfers(1)
             transfers_this_second += 1
             total_executed += 1
             
-            # 计算剩余时间
-            remaining_time = end_time - datetime.now()
-            remaining_minutes = remaining_time.total_seconds() // 60
-            remaining_seconds = remaining_time.total_seconds() % 60
-            
-            # 如果还未达到每秒限制，短暂等待
+            # Brief wait if not reached the per-second limit
             if transfers_this_second < transfers_per_second:
-                time.sleep(0.2)  # 等待200毫秒
+                time.sleep(0.2)
         else:
-            # 如果达到每秒限制，等待到下一秒
+            # Wait for next second if reached the limit
             time.sleep(0.1)
     
-    # 打印结束统计
+    # Print completion statistics
     print("\n" + "=" * 50)
-    print("\n转账执行完成!")
-    print(f"计划执行: {total_transfers} 笔")
-    print(f"实际执行: {total_executed} 笔")
-    print(f"总耗时: {(datetime.now() - start_time).total_seconds():.2f} 秒")
+    print("\nTransfer execution completed!")
+    print(f"Planned transfers: {total_transfers}")
+    print(f"Actual transfers: {total_executed}")
+    print(f"Total time: {(datetime.now() - start_time).total_seconds():.2f} seconds")
 
 def main():
-    parser = argparse.ArgumentParser(description='执行定时转账交易')
-    parser.add_argument('duration', type=int, help='执行时间（分钟）')
+    parser = argparse.ArgumentParser(description='Execute timed transfer transactions')
+    parser.add_argument('duration', type=int, help='Execution duration (minutes)')
     args = parser.parse_args()
     
     if args.duration <= 0:
-        print("执行时间必须大于0分钟")
+        print("Execution duration must be greater than 0 minutes")
         return
     
     try:
         run_timed_transfers(args.duration)
     except KeyboardInterrupt:
-        print("\n程序被用户中断")
+        print("\nProgram interrupted by user")
     except Exception as e:
-        print(f"\n执行出错: {str(e)}")
+        print(f"\nExecution error: {str(e)}")
 
 if __name__ == "__main__":
     main() 

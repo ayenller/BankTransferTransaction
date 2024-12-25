@@ -1,13 +1,14 @@
 import os
 import sys
 
-# 添加项目根目录到Python路径
+# Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from database.db_connection import get_cursor
 
 def create_tables(cursor):
+    """Create database tables"""
     cursor.execute("""
     CREATE DATABASE IF NOT EXISTS banking_system;
     """)
