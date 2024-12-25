@@ -1,0 +1,20 @@
+# 数据库连接
+mysql-connector-python>=8.0.0
+
+# 环境变量管理
+python-dotenv>=0.19.0
+
+# 日期时间处理
+pytz>=2021.1
+
+# 测试框架（用于单元测试）
+pytest>=6.0.0
+pytest-cov>=2.0.0
+
+# 类型提示支持
+typing-extensions>=3.7.4
+
+# 开发工具
+black>=21.0  # 代码格式化
+flake8>=3.9.0  # 代码检查
+isort>=5.9.0  # import 语句排序 
