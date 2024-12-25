@@ -4,20 +4,20 @@
 
 ## 项目结构
 ```
-+ bank_transfer_cli/
-+ ├── database/
-+ │   ├── init_db.py         # 数据库初始化和建表脚本
-+ │   ├── seed_data.py       # 预埋数据生成脚本
-+ │   └── db_connection.py   # 数据库连接管理
-+ ├── app/
-+ │   ├── main.py            # 程序入口，转账交易执行
-+ │   ├── transfer.py        # 转账操作逻辑
-+ │   └── logger.py          # 日志管理
-+ ├── config/
-+ │   └── config.py          # 配置文件
-+ ├── run_transfers.py       # 转账交易运行脚本
-+ ├── requirements.txt       # Python 依赖包
-+ └── README.md              # 项目说明文件
+bank_transfer_cli/
+├── database/
+│   ├── init_db.py         # 数据库初始化和建表脚本
+│   ├── seed_data.py       # 预埋数据生成脚本
+│   └── db_connection.py   # 数据库连接管理
+├── app/
+│   ├── main.py            # 程序入口，转账交易执行
+│   ├── transfer.py        # 转账操作逻辑
+│   └── logger.py          # 日志管理
+├── config/
+│   └── config.py          # 配置文件
+├── run_transfers.py       # 转账交易运行脚本
+├── requirements.txt       # Python 依赖包
+└── README.md              # 项目说明文件
 +
 ```
 
