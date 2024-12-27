@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(project_root)
 
-from app.main import execute_random_transfers
+from app.main import main as execute_main
 
 def run_timed_transfers(duration_minutes):
     """
@@ -69,10 +69,10 @@ def main():
     
     if args.duration <= 0:
         print("Execution duration must be greater than 0 minutes")
-        return
+        sys.exit(1)
     
     try:
-        run_timed_transfers(args.duration)
+        execute_main(args.duration)
     except KeyboardInterrupt:
         print("\nProgram interrupted by user")
     except Exception as e:

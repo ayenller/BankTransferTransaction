@@ -92,7 +92,7 @@ python run_transfers.py
 
 Each transfer will display:
 - Account information for both parties
-- Transfer amount (between 100-1000 CNY, multiples of 100)
+- Transfer amount (between 100-1000 USD, multiples of 100)
 - Account balances before and after transfer
 - Transfer result
 
@@ -102,7 +102,7 @@ All transfer operations are logged in `bank_transfer.log`, including:
 - Transfer time (millisecond precision)
 - Transfer status (SUCCESS/FAILED)
 - Usernames of both parties
-- Transfer amount (between 100-1000 CNY, multiples of 100)
+- Transfer amount (between 100-1000 USD, multiples of 100)
 - Balance changes for both parties
 
 Log format example:

@@ -38,10 +38,10 @@ def seed_transactions(cursor, num_transactions=100):
     print("Starting transaction initialization...")
     
     # Get all account IDs
-    cursor.execute("SELECT account_id FROM banking_system.accounts")
-    account_ids = [row['account_id'] for row in cursor.fetchall()]
+    cursor.execute("SELECT account_id, balance FROM banking_system.accounts")
+    accounts = {row['account_id']: row['balance'] for row in cursor.fetchall()}
     
-    if len(account_ids) < 2:
+    if len(accounts) < 2:
         print("Insufficient accounts to create transactions")
         return
     
@@ -49,13 +49,34 @@ def seed_transactions(cursor, num_transactions=100):
     transactions_data = []
     for _ in range(num_transactions):
         # Randomly select sender and receiver
-        sender_id, receiver_id = random.sample(account_ids, 2)
+        sender_id, receiver_id = random.sample(list(accounts.keys()), 2)
+        amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
+        status = random.choice(['SUCCESS', 'FAILED'])
+        
+        # Get balances
+        sender_balance = accounts[sender_id]
+        receiver_balance = accounts[receiver_id]
+        
+        # Calculate after balances based on status
+        if status == 'SUCCESS':
+            sender_balance_after = sender_balance - amount
+            receiver_balance_after = receiver_balance + amount
+            note = None
+        else:
+            sender_balance_after = sender_balance
+            receiver_balance_after = receiver_balance
+            note = "Insufficient balance"
         
         transaction = (
             sender_id,  # sender_id
             receiver_id,  # receiver_id
-            Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00')),  # amount
-            random.choice(['SUCCESS', 'FAILURE'])  # status
+            amount,  # amount
+            status,  # status
+            sender_balance,  # sender_balance_before
+            sender_balance_after,  # sender_balance_after
+            receiver_balance,  # receiver_balance_before
+            receiver_balance_after,  # receiver_balance_after
+            note  # note
         )
         transactions_data.append(transaction)
     
@@ -63,8 +84,11 @@ def seed_transactions(cursor, num_transactions=100):
     cursor.executemany(
         """
         INSERT INTO banking_system.transactions 
-        (sender_id, receiver_id, amount, status)
-        VALUES (%s, %s, %s, %s)
+        (sender_id, receiver_id, amount, status, 
+         sender_balance_before, sender_balance_after,
+         receiver_balance_before, receiver_balance_after,
+         note)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         transactions_data
     )

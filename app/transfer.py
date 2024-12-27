@@ -1,7 +1,7 @@
 from decimal import Decimal
 from app.logger import log_transaction, log_error
 
-def transfer_amount(sender_id, receiver_id, amount, cursor, conn):
+def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_seconds=0):
     try:
         # 检查发送方余额
         cursor.execute(
@@ -15,12 +15,28 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn):
         
         if not sender_balance_before or sender_balance_before < amount:
             log_transaction(
-                sender_id, receiver_id, amount, "FAILURE",
+                sender_id, receiver_id, amount, "FAILED",
                 sender_balance_before, receiver_balance_before,
                 sender_balance_before, receiver_balance_before,
-                "余额不足"
+                "Insufficient balance",
+                elapsed_seconds
             )
-            return False, "余额不足"
+            # Insert failed transaction record
+            cursor.execute("""
+                INSERT INTO transactions 
+                (sender_id, receiver_id, amount, status,
+                 sender_balance_before, sender_balance_after,
+                 receiver_balance_before, receiver_balance_after,
+                 note)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                sender_id, receiver_id, amount, "FAILED",
+                sender_balance_before, sender_balance_before,
+                receiver_balance_before, receiver_balance_before,
+                "Insufficient balance"
+            ))
+            conn.commit()
+            return False, "Insufficient balance"
             
         # 更新账户余额
         cursor.execute(
@@ -42,19 +58,49 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn):
         sender_balance_after = updated_accounts.get(sender_id)
         receiver_balance_after = updated_accounts.get(receiver_id)
         
-        # 记录交易
+        # Record transaction
         cursor.execute("""
-            INSERT INTO transactions (sender_id, receiver_id, amount, status)
-            VALUES (%s, %s, %s, %s)
-        """, (sender_id, receiver_id, amount, "SUCCESS"))
+            INSERT INTO transactions 
+            (sender_id, receiver_id, amount, status,
+             sender_balance_before, sender_balance_after,
+             receiver_balance_before, receiver_balance_after,
+             note)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            sender_id, receiver_id, amount, "SUCCESS",
+            sender_balance_before, sender_balance_after,
+            receiver_balance_before, receiver_balance_after,
+            None
+        ))
         
         log_transaction(
             sender_id, receiver_id, amount, "SUCCESS",
             sender_balance_before, receiver_balance_before,
-            sender_balance_after, receiver_balance_after
+            sender_balance_after, receiver_balance_after,
+            None,
+            elapsed_seconds
         )
-        return True, "转账成功"
+        conn.commit()
+        return True, "Transfer successful"
         
     except Exception as e:
-        log_error(f"转账失败: {str(e)}")
-        return False, f"转账失败: {str(e)}" 
+        # Insert error transaction record
+        try:
+            cursor.execute("""
+                INSERT INTO transactions 
+                (sender_id, receiver_id, amount, status,
+                 sender_balance_before, sender_balance_after,
+                 receiver_balance_before, receiver_balance_after,
+                 note)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                sender_id, receiver_id, amount, "ERROR",
+                sender_balance_before, sender_balance_before,
+                receiver_balance_before, receiver_balance_before,
+                str(e)[:200]
+            ))
+        except:
+            pass  # Ignore error when inserting error record
+        log_error(f"Transfer failed: {str(e)}")
+        conn.commit()
+        return False, f"Transfer failed: {str(e)}" 

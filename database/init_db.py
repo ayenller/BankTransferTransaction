@@ -33,6 +33,11 @@ def create_tables(cursor):
         receiver_id BIGINT NOT NULL,
         amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
         status VARCHAR(20) NOT NULL,
+        sender_balance_before DECIMAL(10, 2) NOT NULL,
+        sender_balance_after DECIMAL(10, 2) NOT NULL,
+        receiver_balance_before DECIMAL(10, 2) NOT NULL,
+        receiver_balance_after DECIMAL(10, 2) NOT NULL,
+        note VARCHAR(200),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (transaction_id),
         FOREIGN KEY (sender_id) REFERENCES banking_system.accounts(account_id),
@@ -43,4 +48,4 @@ def create_tables(cursor):
 if __name__ == "__main__":
     with get_cursor() as (cursor, conn):
         create_tables(cursor)
-        print("数据库表创建成功！") 
+        print("create tables success!") 
