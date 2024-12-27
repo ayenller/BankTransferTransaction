@@ -10,6 +10,11 @@ from database.db_connection import get_cursor
 def create_tables(cursor):
     """Create database tables"""
     cursor.execute("""
+    DROP DATABASE IF EXISTS banking_system;
+    """)
+
+    """Create database tables"""
+    cursor.execute("""
     CREATE DATABASE IF NOT EXISTS banking_system;
     """)
     
