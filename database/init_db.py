@@ -46,6 +46,6 @@ def create_tables(cursor):
     """)
 
 if __name__ == "__main__":
-    with get_cursor() as (cursor, conn):
+    with get_cursor(config_type="test") as (cursor, conn):
         create_tables(cursor)
-        print("create tables success!") 
+        print("create database/tables success!") 

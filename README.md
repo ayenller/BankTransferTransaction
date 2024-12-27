@@ -6,139 +6,141 @@ A Python-based command-line application for bank transfers using TiDB as the dat
 ```
 bank_transfer_cli/
 ├── database/
-│   ├── init_db.py         # Database initialization and table creation
+│   ├── __init__.py
+│   ├── init_db.py         # Database initialization
 │   ├── seed_data.py       # Test data generation
 │   └── db_connection.py   # Database connection management
 ├── app/
-│   ├── main.py            # Main entry, transfer execution
-│   ├── transfer.py        # Transfer logic
-│   └── logger.py          # Logging management
+│   ├── __init__.py
+│   ├── main.py           # Main application logic
+│   ├── transfer.py       # Transfer execution logic
+│   └── logger.py         # Logging utilities
 ├── config/
-│   └── config.py          # Configuration file
-├── run_transfers.py       # Transfer execution script
-├── requirements.txt       # Python dependencies
-└── README.md             # Project documentation
+│   ├── __init__.py
+│   └── config.py         # Configuration settings
+├── run_transfers.py      # CLI entry point
+├── requirements.txt      # Dependencies
+└── README.md            # Documentation
 ```
 
 ## Requirements
 
 - Python 3.8+
-- TiDB database
-- pip package management tool
+- TiDB/MySQL
+- Dependencies listed in requirements.txt
 
-## Quick Start
+## Installation
 
-### 1. Install Dependencies
-
-First, create and activate a virtual environment (recommended):
+1. Create and activate a virtual environment:
 ```bash
 # Create virtual environment
-python -m venv myenv
+python -m venv venv
 
 # Activate virtual environment
-# Windows:
-myenv\Scripts\activate
-# macOS/Linux:
-source myenv/bin/activate
+# On Windows:
+venv\Scripts\activate
+# On Unix or MacOS:
+source venv/bin/activate
 ```
 
-Install required dependencies:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Database Connection
+## Database Setup
 
-Modify database connection parameters in `config/config.py`:
-```python
-DATABASE_CONFIG = {
-    "host": "127.0.0.1",  # Your TiDB host address
-    "port": 4000,         # TiDB port
-    "user": "root",       # Database username
-    "database": "banking_system"  # Database name
-}
-```
-
-### 3. Initialize Database
-
-Run the following command to create database and tables:
+1. Initialize the database structure:
 ```bash
 python database/init_db.py
 ```
 
-This will create:
-- banking_system database
-- accounts table (stores account information)
-- transactions table (stores transaction records)
-
-### 4. Generate Test Data
-
-Run the following command to generate test data:
+2. Generate test data:
 ```bash
 python database/seed_data.py
 ```
 
 This will:
-- Create 100 test accounts
-- Generate 100 random transaction records
-- Set random initial balances for each account
+- Create required database and tables
+- Generate 100 test accounts
+- Set random initial balances
 
-### 5. Execute Transfers
+## Usage
 
-Run the following command to execute random transfers:
+### Running Transfers
+
+Execute transfers for a specified duration:
 ```bash
-python run_transfers.py
+python run_transfers.py <duration_minutes>
+
+# Example: Run for 5 minutes
+python run_transfers.py 5
 ```
 
-Each transfer will display:
-- Account information for both parties
-- Transfer amount (between 100-1000 USD, multiples of 100)
-- Account balances before and after transfer
-- Transfer result
+### Output Format
 
-### Logging
+The application displays real-time transfer status:
+```
+Time   Status   Sender             Receiver             Amount         Sender Balance        Receiver Balance     Note
+----------------------------------------------------------------------------------------------------------------------------------
+  1s   SUCCESS  user_74            user_15              900.00 USD    4400.00->3500.00    2600.00->3500.00    
+  2s   FAILED   user_32            user_89              700.00 USD    1200.00->1200.00    3800.00->3800.00    Insufficient balance
+```
 
-All transfer operations are logged in `bank_transfer.log`, including:
-- Transfer time (millisecond precision)
-- Transfer status (SUCCESS/FAILED)
-- Usernames of both parties
-- Transfer amount (between 100-1000 USD, multiples of 100)
-- Balance changes for both parties
+### Transaction States
 
-Log format example:
+- `SUCCESS`: Transfer completed successfully
+- `FAILED`: Transfer failed (e.g., insufficient balance)
+- `ERROR`: System error occurred
+- `WAIT`: Waiting for next transaction
+
+## Configuration
+
+Configuration settings in `config/config.py`:
+
+- `DATABASE_CONFIG`: Production database settings
+- `TEST_DATABASE_CONFIG`: Initialize data connection
+- `LOG_CONFIG`: Logging configuration
+
+## Development
+
+### Test Environment
+
+Use test database for Initialize data:
+```python
+with get_cursor(config_type="test") as (cursor, conn):
+    # Development code here
+```
+
+### Code Style
+
+The project uses:
+- black for code formatting
+- flake8 for code checking
+- isort for import sorting
+
+## Logging
+
+All operations are logged in `bank_transfer.log`:
+- Transfer details
+- Balance changes
+- Error messages
+
+Log format:
 ```
 [2024-03-21 15:30:45.123] INFO: Transaction SUCCESS: Sender=user_05(Balance: 5000.00->4500.00), Receiver=user_12(Balance: 3000.00->3500.00), Amount=500.00
-[2024-03-21 15:30:46.456] INFO: Transaction FAILED: Sender=user_08(Balance: 100.00->100.00), Receiver=user_03(Balance: 2000.00->2000.00), Amount=800.00 - Reason: Insufficient balance
 ```
 
-## Data Consistency Verification
+## Error Handling
 
-The system uses transactions to ensure atomicity of each transfer. You can verify system data consistency at any time using the following SQL:
+The application handles:
+- Insufficient balance
+- Database connection issues
+- Concurrent transaction conflicts
+- System errors
 
-```sql
--- Query total system balance
-SELECT SUM(balance) as total_balance FROM banking_system.accounts;
+## Verify the data consistency by executing the following sql any time.
 ```
-
-Since each transfer completes both debit and credit operations in a single transaction:
-1. Total system balance should remain constant at all times
-2. Total balance equals the sum of all initial account balances
-3. Failed transfers do not affect the system total balance
-
-You can view transfer history and balance changes using these SQL queries:
-
-```sql
--- View successful transfers
-SELECT t.*, 
-       a1.account_name as sender_name, 
-       a2.account_name as receiver_name
-FROM banking_system.transactions t
-JOIN banking_system.accounts a1 ON t.sender_id = a1.account_id
-JOIN banking_system.accounts a2 ON t.receiver_id = a2.account_id
-WHERE t.status = 'SUCCESS'
-ORDER BY t.created_at DESC
-LIMIT 10;
-
 -- View account balances
 SELECT account_name, balance
 FROM banking_system.accounts
@@ -146,15 +148,14 @@ ORDER BY account_id
 LIMIT 10;
 ```
 
-Verification steps:
-1. Record total balance before starting transfer tests
-2. Query total balance during transfers - should match initial value
-3. Verify total balance again after all transfers complete
+## Contributing
 
-## Notes
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
 
-1. Ensure TiDB database is running and accessible
-2. Transfers will fail if account balance is insufficient
-3. All transfer operations execute within transactions to ensure data consistency
-4. Each transfer is logged in real-time for tracking and auditing
-5. System consistency can be verified through total balance checks
+## License
+
+This project is licensed under the APACHE2.0 License.

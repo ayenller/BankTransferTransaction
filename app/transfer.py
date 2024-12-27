@@ -3,7 +3,7 @@ from app.logger import log_transaction, log_error
 
 def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_seconds=0):
     try:
-        # 检查发送方余额
+        # Check the balance of sender
         cursor.execute(
             "SELECT account_id, balance FROM accounts WHERE account_id IN (%s, %s) FOR UPDATE",
             (sender_id, receiver_id)
@@ -38,7 +38,7 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
             conn.commit()
             return False, "Insufficient balance"
             
-        # 更新账户余额
+        # Update balance
         cursor.execute(
             "UPDATE accounts SET balance = balance - %s WHERE account_id = %s",
             (amount, sender_id)
@@ -48,7 +48,7 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
             (amount, receiver_id)
         )
         
-        # 获取更新后的余额
+        # Get the balance after transfer
         cursor.execute(
             "SELECT account_id, balance FROM accounts WHERE account_id IN (%s, %s)",
             (sender_id, receiver_id)
