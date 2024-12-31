@@ -1,31 +1,84 @@
 import mysql.connector
+from mysql.connector import Error
+import time
 from config.config import DATABASE_CONFIG, TEST_DATABASE_CONFIG
 from contextlib import contextmanager
+from app.logger import log_error
 
-def get_db_connection(config_type="prod"):
-    try:
-        # connect to test database to initiate data
-        if config_type == "test":
-            config = TEST_DATABASE_CONFIG
-        else:
-            config = DATABASE_CONFIG
+class DatabaseConnectionError(Exception):
+    """Custom exception for database connection errors"""
+    pass
 
-        conn = mysql.connector.connect(**config)
-        return conn
-    except mysql.connector.Error as err:
-        raise Exception(f"Database connection failed: {err}")
+def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
+    """
+    Get database connection with retry mechanism
+    
+    Args:
+        config_type: "prod" or "test" to select configuration
+        max_retries: Maximum number of connection attempts
+        retry_delay: Delay in seconds between retries
+    """
+    retries = 0
+    last_error = None
+    
+    # Select configuration based on type
+    if config_type == "test":
+        config = TEST_DATABASE_CONFIG
+    else:
+        config = DATABASE_CONFIG
+    
+    while retries < max_retries:
+        try:
+            conn = mysql.connector.connect(**config)
+            
+            # Test connection is alive
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            cursor.close()
+            
+            return conn
+            
+        except Error as err:
+            last_error = err
+            retries += 1
+            
+            if retries < max_retries:
+                log_error(f"Database connection attempt {retries} failed: {err}")
+                time.sleep(retry_delay)
+            
+    raise DatabaseConnectionError(f"Failed to connect to database after {max_retries} attempts. Last error: {last_error}")
 
 @contextmanager
-def get_cursor(config_type="prod"):
-    """Get database cursor with connection"""
-    conn = get_db_connection(config_type)
-    cursor = conn.cursor(dictionary=True)
+def get_cursor(config_type="prod", max_retries=3000, retry_delay=1):
+    """
+    Get database cursor with connection retry mechanism
+    
+    Args:
+        config_type: "prod" or "test" to select configuration
+        max_retries: Maximum number of connection attempts
+        retry_delay: Delay in seconds between retries
+    """
+    conn = None
+    cursor = None
+    
     try:
+        conn = get_db_connection(config_type, max_retries, retry_delay)
+        cursor = conn.cursor(dictionary=True)
+        
+        # Enable automatic reconnection
+        conn.ping(reconnect=True, attempts=3000, delay=1)
+        
         yield cursor, conn
         conn.commit()
-    except Exception as e:
-        conn.rollback()
-        raise e
+        
+    except Error as e:
+        if conn:
+            conn.rollback()
+        raise DatabaseConnectionError(f"Database operation failed: {str(e)}")
+        
     finally:
-        cursor.close()
-        conn.close() 
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
