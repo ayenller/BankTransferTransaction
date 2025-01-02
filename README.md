@@ -156,7 +156,48 @@ LIMIT 10;
 SELECT * FROM banking_system.transactions
 ORDER BY created_at DESC
 LIMIT 5;
+
+-- Verify total balance remains constant
+SELECT 
+    COUNT(*) as account_count,
+    SUM(balance) as total_balance,
+    MIN(balance) as min_balance,
+    MAX(balance) as max_balance,
+    AVG(balance) as avg_balance
+FROM banking_system.accounts;
 ```
+
+### Data Consistency
+
+The application maintains data consistency throughout all transfer operations:
+
+1. **Balance Conservation**: The total balance of all accounts remains constant during transfers
+   - Each transfer operation moves money between accounts without creating or destroying value
+   - The sum of all account balances will be the same before and after any transfer
+
+2. **Transaction Atomicity**: Each transfer is atomic
+   - Either both accounts are updated (successful transfer)
+   - Or neither account is updated (failed transfer)
+   - No partial updates are possible
+
+3. **Verification Example**:
+   ```sql
+   -- Compare total balance at different times
+   -- Should always return the same value
+   SELECT SUM(balance) as total_balance 
+   FROM banking_system.accounts;
+   ```
+
+   Sample verification:
+   ```
+   Time    Total Balance
+   ----    -------------
+   10:00   5,000,000.00    (Initial state)
+   10:05   5,000,000.00    (After 300 transfers)
+   10:10   5,000,000.00    (After 600 transfers)
+   ```
+
+This consistency check can be performed at any time during the transfer process to verify the system's data integrity.
 
 ## Contributing
 
