@@ -1,7 +1,7 @@
-import os
 import sys
 import time
 import argparse
+import os
 from datetime import datetime, timedelta
 
 # Add project root to Python path
@@ -65,13 +65,19 @@ def run_timed_transfers(duration_minutes):
 def main():
     parser = argparse.ArgumentParser(description='Execute timed transfer transactions')
     parser.add_argument('duration', type=int, help='Execution duration (minutes)')
+    parser.add_argument('--host', type=str, default='127.0.0.1',
+                       help='TiDB server host address (default: 127.0.0.1)')
     args = parser.parse_args()
     
     if args.duration <= 0:
         print("Execution duration must be greater than 0 minutes")
         sys.exit(1)
     
+    # Set TiDB host in environment variable
+    os.environ['TIDB_HOST'] = args.host
+    
     try:
+        print(f"\nConnecting to TiDB server at {args.host}...")
         execute_main(args.duration)
     except KeyboardInterrupt:
         print("\nProgram interrupted by user")

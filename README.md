@@ -66,12 +66,20 @@ pip install -r requirements.txt
 
 1. Initialize the database structure:
 ```bash
+# Initialize with default host (127.0.0.1)
 python database/init_db.py
+
+# Or specify TiDB host
+python database/init_db.py --host 192.168.1.100
 ```
 
 2. Generate test data:
 ```bash
+# Generate data with default host
 python database/seed_data.py
+
+# Or specify TiDB host
+python database/seed_data.py --host 192.168.1.100
 ```
 
 This will:
@@ -79,17 +87,44 @@ This will:
 - Generate 100 test accounts
 - Set random initial balances
 
+### Database Connection Parameters
+
+All scripts support specifying TiDB server host:
+
+- `--host`: TiDB server host address (default: 127.0.0.1)
+
+Example workflow with remote TiDB:
+```bash
+# 1. Initialize database
+python database/init_db.py --host tidb.example.com
+
+# 2. Generate test data
+python database/seed_data.py --host tidb.example.com
+
+# 3. Run transfers
+python run_transfers.py 5 --host tidb.example.com
+```
+
+Note: All scripts will use the same connection settings for consistency.
+
 ## Usage
 
 ### Running Transfers
 
 Execute transfers for a specified duration:
 ```bash
-python run_transfers.py <duration_minutes>
+python run_transfers.py <duration_minutes> [--host TIDB_HOST]
 
 # Example: Run for 5 minutes
 python run_transfers.py 5
+
+# Example: Run for 5 minutes with specific TiDB host
+python run_transfers.py 5 --host 192.168.1.100
 ```
+
+Parameters:
+- `duration_minutes`: Required. Duration to run transfers in minutes
+- `--host`: Optional. TiDB server host address (default: 127.0.0.1)
 
 ### Output Format
 

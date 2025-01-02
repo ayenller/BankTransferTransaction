@@ -1,6 +1,11 @@
+import os
+
+# Get database host from environment variable or use default
+DB_HOST = os.getenv('TIDB_HOST')
+
 # Execution 
 DATABASE_CONFIG = {
-    "host": "127.0.0.1",
+    "host": DB_HOST,
     "port": 4000,
     "user": "root",
     "database": "banking_system"
@@ -8,7 +13,7 @@ DATABASE_CONFIG = {
 
 # Initiate db
 TEST_DATABASE_CONFIG = {
-    "host": "127.0.0.1",
+    "host": DB_HOST,
     "port": 4000,
     "user": "root",
     "database": "test"

@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,6 +52,16 @@ def create_tables(cursor):
     """)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Initialize database tables')
+    parser.add_argument('--host', type=str, default='127.0.0.1',
+                        help='TiDB server host address (default: 127.0.0.1)')
+    args = parser.parse_args()
+
+    # Set TiDB host in environment variable
+    os.environ['TIDB_HOST'] = args.host
+
+    print(f"\nConnecting to TiDB server at {args.host}...")
+    
     with get_cursor(config_type="test") as (cursor, conn):
         create_tables(cursor)
         print("create database/tables success!") 
