@@ -4,6 +4,7 @@ import time
 from config.config import DATABASE_CONFIG, TEST_DATABASE_CONFIG
 from contextlib import contextmanager
 from app.logger import log_error
+from utils.queue_utils import db_result_queue
 
 class DatabaseConnectionError(Exception):
     """Custom exception for database connection errors"""
@@ -37,6 +38,10 @@ def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
             cursor.fetchone()
             cursor.close()
             
+            # Send recovery message if retry was successful
+            if retries > 0:
+                db_result_queue.put(('DB_RECOVERED', 'Database connection restored'))
+            
             return conn
             
         except Error as err:
@@ -45,12 +50,15 @@ def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
             
             if retries < max_retries:
                 log_error(f"Database connection attempt {retries} failed: {err}")
+                # Send retry message to queue
+                retry_msg = f"Retry {retries}/{max_retries}: {str(err)}"
+                db_result_queue.put(('DB_RETRY', retry_msg))
                 time.sleep(retry_delay)
             
     raise DatabaseConnectionError(f"Failed to connect to database after {max_retries} attempts. Last error: {last_error}")
 
 @contextmanager
-def get_cursor(config_type="prod", max_retries=3000, retry_delay=1):
+def get_cursor(config_type="prod", max_retries=3600, retry_delay=1):
     """
     Get database cursor with connection retry mechanism
     

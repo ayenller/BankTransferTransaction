@@ -18,6 +18,7 @@ from database.db_connection import get_cursor, DatabaseConnectionError
 from app.transfer import transfer_amount
 from app.logger import setup_logger, log_error
 from utils.format_utils import format_transfer_line, print_transfer_header
+from utils.queue_utils import db_result_queue
 
 stop_event = threading.Event()
 transfer_stats = {'successful': 0, 'failed': 0}
@@ -25,7 +26,6 @@ stats_lock = threading.Lock()
 connection_retry_delay = 5  # seconds
 connection_status = {'is_connected': True}
 connection_lock = threading.Lock()
-db_result_queue = Queue()
 
 def signal_handler(signum, frame):
     stop_event.set()
@@ -170,7 +170,7 @@ def print_transfer_status():
             try:
                 status, data = db_result_queue.get(timeout=0.1)
                 
-                # 成功的转账交易
+                # Successful transfer transaction
                 if status == 'SUCCESS' and data and data['transaction_id'] != last_transaction_id:
                     last_transaction_id = data['transaction_id']
                     line = format_transfer_line(
@@ -187,13 +187,23 @@ def print_transfer_status():
                     )
                     print(line)
                 
-                # 业务错误
+                # Business error
                 elif status == 'BUSI_ERROR':
                     line = format_transfer_line(current_second, status, note=str(data))
                     print(line)
                 
-                # 数据库错误
+                # Database error
                 elif status == 'DB_ERROR':
+                    line = format_transfer_line(current_second, status, note=str(data))
+                    print(line)
+                
+                # Database retry
+                elif status == 'DB_RETRY':
+                    line = format_transfer_line(current_second, status, note=str(data))
+                    print(line)
+                
+                # Database recovery
+                elif status == 'DB_RECOVERED':
                     line = format_transfer_line(current_second, status, note=str(data))
                     print(line)
                 
@@ -205,7 +215,7 @@ def print_transfer_status():
                 is_connected = connection_status['is_connected']
             
             status_msg = "DB ERROR" if not is_connected else "ERROR"
-            print(f"{current_second:>3}s   {status_msg:<8} {'N/A':<18} {'N/A':<18} "
+            print(f"{current_second:>3}s   {status_msg:<8} {'N/A':<8} {'N/A':<8} "
                   f"{'0.00':>8} USD    "
                   f"{'0.00':>8}->{0.00:<8}    "
                   f"{'0.00':>8}->{0.00:<8}    "
