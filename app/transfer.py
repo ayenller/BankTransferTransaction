@@ -14,6 +14,25 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
         receiver_balance_before = accounts.get(receiver_id, 0)
         
         if not sender_balance_before or sender_balance_before < amount:
+            # Get account names for error message
+            cursor.execute(
+                "SELECT account_id, account_name FROM accounts WHERE account_id IN (%s, %s)",
+                (sender_id, receiver_id)
+            )
+            account_names = {row['account_id']: row['account_name'] for row in cursor.fetchall()}
+            
+            error_data = {
+                'status': 'FAILED',
+                'sender_name': account_names.get(sender_id, 'N/A'),
+                'receiver_name': account_names.get(receiver_id, 'N/A'),
+                'amount': amount,
+                'sender_balance_before': sender_balance_before,
+                'sender_balance_after': sender_balance_before,
+                'receiver_balance_before': receiver_balance_before,
+                'receiver_balance_after': receiver_balance_before,
+                'note': 'Insufficient balance'
+            }
+            
             log_transaction(
                 sender_id, receiver_id, amount, "FAILED",
                 sender_balance_before, receiver_balance_before,
@@ -36,7 +55,7 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
                 "Insufficient balance"
             ))
             conn.commit()
-            return False, "Insufficient balance"
+            return False, error_data
             
         # Update balance
         cursor.execute(
