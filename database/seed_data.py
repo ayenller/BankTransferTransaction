@@ -115,7 +115,7 @@ def main():
             
             # Initialize data
             seed_accounts(cursor)
-            seed_transactions(cursor)
+            # seed_transactions(cursor)
             
             print("Data initialization completed!")
             

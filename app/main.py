@@ -189,22 +189,52 @@ def print_transfer_status():
                 
                 # Business error
                 elif status == 'BUSI_ERROR':
-                    line = format_transfer_line(current_second, 
-                        data['status'],
-                        data['sender_name'],
-                        data['receiver_name'],
-                        data['amount'],
-                        data['sender_balance_before'],
-                        data['sender_balance_after'],
-                        data['receiver_balance_before'],
-                        data['receiver_balance_after'],
-                        data['note'] 
-                    )
+                    # Check if data contains full transaction info
+                    if isinstance(data, dict) and data.get('amount', 0) > 0:
+                        line = format_transfer_line(
+                            current_second,
+                            data['status'],
+                            data['sender_name'],
+                            data['receiver_name'],
+                            data['amount'],
+                            data['sender_balance_before'],
+                            data['sender_balance_after'],
+                            data['receiver_balance_before'],
+                            data['receiver_balance_after'],
+                            data['note']
+                        )
+                    else:
+                        # Basic error info
+                        line = format_transfer_line(
+                            current_second,
+                            status,
+                            note=str(data)
+                        )
                     print(line)
                 
                 # Database error
                 elif status == 'DB_ERROR':
-                    line = format_transfer_line(current_second, status, note=str(data))
+                    # Check if data contains full transaction info
+                    if isinstance(data, dict) and data.get('amount', 0) > 0:
+                        line = format_transfer_line(
+                            current_second,
+                            data['status'],
+                            data['sender_name'],
+                            data['receiver_name'],
+                            data['amount'],
+                            data['sender_balance_before'],
+                            data['sender_balance_after'],
+                            data['receiver_balance_before'],
+                            data['receiver_balance_after'],
+                            data['note']
+                        )
+                    else:
+                        # Basic error info
+                        line = format_transfer_line(
+                            current_second,
+                            status,
+                            note=str(data)
+                        )
                     print(line)
                 
                 # Database retry
