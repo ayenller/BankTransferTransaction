@@ -233,7 +233,7 @@ def print_transfer_status():
                 'sender_balance_after': 0.00,
                 'receiver_balance_before': 0.00,
                 'receiver_balance_after': 0.00,
-                'note': str(e) if not is_connected else 'Processing error'
+                'note': str(e) 
             }
             
             line = format_transfer_line(
