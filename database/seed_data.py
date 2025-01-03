@@ -98,17 +98,14 @@ def seed_transactions(cursor, num_transactions=100):
 
 def main():
     parser = argparse.ArgumentParser(description='Seed database with test data')
-    parser.add_argument('--host', type=str, default='127.0.0.1',
-                        help='TiDB server host address (default: 127.0.0.1)')
+    parser.add_argument('--host', type=str, required=True,
+                        help='TiDB server host address')
     args = parser.parse_args()
-
-    # Set TiDB host in environment variable
-    os.environ['TIDB_HOST'] = args.host
 
     print(f"\nConnecting to TiDB server at {args.host}...")
     
     try:
-        with get_cursor() as (cursor, conn):
+        with get_cursor(args.host) as (cursor, conn):
             # Check if database exists
             cursor.execute("USE banking_system")
             

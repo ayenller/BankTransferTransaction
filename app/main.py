@@ -84,12 +84,12 @@ def get_latest_transaction(cursor):
     """)
     return cursor.fetchone()
 
-def execute_transfers():
+def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
             try:
-                with get_cursor() as (cursor, conn):
+                with get_cursor(host) as (cursor, conn):
                     with connection_lock:
                         connection_status['is_connected'] = True
                     
@@ -223,14 +223,14 @@ def print_transfer_status():
         
         time.sleep(1)
 
-def main(duration_minutes=1):
+def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
     global start_time
     start_time = time.time()
     setup_logger()
     
     # Start transfer execution thread
-    transfer_thread = threading.Thread(target=execute_transfers)
+    transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
     transfer_thread.daemon = True
     transfer_thread.start()
     

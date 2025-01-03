@@ -10,11 +10,12 @@ class DatabaseConnectionError(Exception):
     """Custom exception for database connection errors"""
     pass
 
-def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
+def get_db_connection(host, config_type="prod", max_retries=3000, retry_delay=1):
     """
     Get database connection with retry mechanism
     
     Args:
+        host: TiDB server host address
         config_type: "prod" or "test" to select configuration
         max_retries: Maximum number of connection attempts
         retry_delay: Delay in seconds between retries
@@ -24,9 +25,12 @@ def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
     
     # Select configuration based on type
     if config_type == "test":
-        config = TEST_DATABASE_CONFIG
+        config = TEST_DATABASE_CONFIG.copy()
     else:
-        config = DATABASE_CONFIG
+        config = DATABASE_CONFIG.copy()
+    
+    # Set host in config
+    config["host"] = host
     
     while retries < max_retries:
         try:
@@ -58,11 +62,12 @@ def get_db_connection(config_type="prod", max_retries=3000, retry_delay=1):
     raise DatabaseConnectionError(f"Failed to connect to database after {max_retries} attempts. Last error: {last_error}")
 
 @contextmanager
-def get_cursor(config_type="prod", max_retries=3600, retry_delay=1):
+def get_cursor(host, config_type="prod", max_retries=3600, retry_delay=1):
     """
     Get database cursor with connection retry mechanism
     
     Args:
+        host: TiDB server host address
         config_type: "prod" or "test" to select configuration
         max_retries: Maximum number of connection attempts
         retry_delay: Delay in seconds between retries
@@ -71,7 +76,7 @@ def get_cursor(config_type="prod", max_retries=3600, retry_delay=1):
     cursor = None
     
     try:
-        conn = get_db_connection(config_type, max_retries, retry_delay)
+        conn = get_db_connection(host, config_type, max_retries, retry_delay)
         cursor = conn.cursor(dictionary=True)
         
         # Enable automatic reconnection
