@@ -224,12 +224,31 @@ def print_transfer_status():
             with connection_lock:
                 is_connected = connection_status['is_connected']
             
-            status_msg = "DB ERROR" if not is_connected else "ERROR"
-            print(f"{current_second:>3}s   {status_msg:<8} {'N/A':<8} {'N/A':<8} "
-                  f"{'0.00':>8} USD    "
-                  f"{'0.00':>8}->{0.00:<8}    "
-                  f"{'0.00':>8}->{0.00:<8}    "
-                  f"{'Connection lost...' if not is_connected else 'Processing...'}")
+            error_data = {
+                'status': 'DB_ERROR' if not is_connected else 'ERROR',
+                'sender_name': 'N/A',
+                'receiver_name': 'N/A',
+                'amount': 0.00,
+                'sender_balance_before': 0.00,
+                'sender_balance_after': 0.00,
+                'receiver_balance_before': 0.00,
+                'receiver_balance_after': 0.00,
+                'note': str(e) if not is_connected else 'Processing error'
+            }
+            
+            line = format_transfer_line(
+                current_second,
+                error_data['status'],
+                error_data['sender_name'],
+                error_data['receiver_name'],
+                error_data['amount'],
+                error_data['sender_balance_before'],
+                error_data['sender_balance_after'],
+                error_data['receiver_balance_before'],
+                error_data['receiver_balance_after'],
+                error_data['note']
+            )
+            print(line)
         
         time.sleep(1)
 
