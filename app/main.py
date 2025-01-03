@@ -126,7 +126,7 @@ def execute_transfers(host):
                                 time.sleep(1)
                                 continue
                             
-                        # 获取并发送最新交易记录
+                        # Get & send the last transaction record
                         latest_transaction = get_latest_transaction(cursor)
                         db_result_queue.put(('SUCCESS', latest_transaction))
                         
@@ -189,7 +189,17 @@ def print_transfer_status():
                 
                 # Business error
                 elif status == 'BUSI_ERROR':
-                    line = format_transfer_line(current_second, status, note=str(data))
+                    line = format_transfer_line(current_second, 
+                        data['status'],
+                        data['sender_name'],
+                        data['receiver_name'],
+                        data['amount'],
+                        data['sender_balance_before'],
+                        data['sender_balance_after'],
+                        data['receiver_balance_before'],
+                        data['receiver_balance_after'],
+                        data['note'] 
+                    )
                     print(line)
                 
                 # Database error
