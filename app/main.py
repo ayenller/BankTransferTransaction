@@ -92,9 +92,8 @@ def execute_transfers(host):
                 with get_cursor(host) as (cursor, conn):
                     with connection_lock:
                         connection_status['is_connected'] = True
-                    
                     try:
-                        # 获取账户信息
+                        # Get 2 transfer accounts
                         try:
                             accounts = get_accounts(cursor)
                         except ValueError as e:
@@ -103,7 +102,7 @@ def execute_transfers(host):
                             time.sleep(1)
                             continue
                         
-                        # 执行转账交易
+                        # Execute transfer transaction
                         sender, receiver = random.sample(accounts, 2)
                         amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
                         
@@ -115,12 +114,12 @@ def execute_transfers(host):
                             conn
                         )
                         
-                        # 更新统计信息
+                        # Update statistics
                         with stats_lock:
                             if success:
                                 transfer_stats['successful'] += 1
                             else:
-                                # 业务错误（如余额不足）
+                                # Business error, such as insuficient balance
                                 db_result_queue.put(('BUSI_ERROR', message))
                                 transfer_stats['failed'] += 1
                                 time.sleep(1)
@@ -131,15 +130,13 @@ def execute_transfers(host):
                         db_result_queue.put(('SUCCESS', latest_transaction))
                         
                     except Exception as e:
-                        # 处理业务异常
+                        # Business exception
                         with stats_lock:
                             transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
-                        
                     time.sleep(1)  # Execute one transfer per second
-                    
             except DatabaseConnectionError as e:
-                # 处理数据库连接异常
+                # Handle database exception
                 with connection_lock:
                     connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
@@ -236,17 +233,17 @@ def print_transfer_status():
                             note=str(data)
                         )
                     print(line)
-                
                 # Database retry
                 elif status == 'DB_RETRY':
                     line = format_transfer_line(current_second, status, note=str(data))
                     print(line)
-                
                 # Database recovery
                 elif status == 'DB_RECOVERED':
                     line = format_transfer_line(current_second, status, note=str(data))
                     print(line)
-                
+                else:
+                    line = format_transfer_line(current_second, status, note=str(data))
+                    print(line)
             except Empty:
                 line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                 print(line)
