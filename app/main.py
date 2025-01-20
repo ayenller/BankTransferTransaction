@@ -118,6 +118,9 @@ def execute_transfers(host):
                         with stats_lock:
                             if success:
                                 transfer_stats['successful'] += 1
+                                # Get & send the last transaction record
+                                latest_transaction = get_latest_transaction(cursor)
+                                db_result_queue.put(('SUCCESS', latest_transaction))
                             else:
                                 # Business error, such as insuficient balance
                                 db_result_queue.put(('BUSI_ERROR', message))
@@ -125,10 +128,6 @@ def execute_transfers(host):
                                 time.sleep(1)
                                 continue
                             
-                        # Get & send the last transaction record
-                        latest_transaction = get_latest_transaction(cursor)
-                        db_result_queue.put(('SUCCESS', latest_transaction))
-                        
                     except Exception as e:
                         # Business exception
                         with stats_lock:
@@ -140,6 +139,7 @@ def execute_transfers(host):
                 with connection_lock:
                     connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
+                # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
                 time.sleep(connection_retry_delay)
             except Exception as e:
