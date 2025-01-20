@@ -134,6 +134,7 @@ def execute_transfers(host):
                             transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
                     time.sleep(1)  # Execute one transfer per second
+                    continue
             except DatabaseConnectionError as e:
                 # Handle database exception
                 with connection_lock:
@@ -142,11 +143,13 @@ def execute_transfers(host):
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
                 time.sleep(connection_retry_delay)
+                continue
             except Exception as e:
                 # 处理其他异常
                 log_error(f"Error in transfer: {str(e)}")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
                 time.sleep(1)
+                continue
 
     except Exception as e:
         print(f"Error in transfer thread: {str(e)}")
