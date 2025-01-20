@@ -251,6 +251,8 @@ def print_transfer_status():
             except Empty:
                 line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                 print(line)
+                time.sleep(1)
+                continue
         except Exception as e:
             with connection_lock:
                 is_connected = connection_status['is_connected']
@@ -280,6 +282,8 @@ def print_transfer_status():
                 error_data['note']
             )
             print(line)
+            time.sleep(1)
+            continue
         
         time.sleep(1)
 
