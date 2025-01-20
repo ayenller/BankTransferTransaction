@@ -165,6 +165,7 @@ def print_transfer_status():
     
     while not stop_event.is_set():
         current_second += 1
+        print("#Debug# time:", current_second)
         
         try:
             try:
