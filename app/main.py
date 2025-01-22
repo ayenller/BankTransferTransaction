@@ -175,7 +175,7 @@ def print_transfer_status():
             print("#Debug 1-4# time:", current_second)
             try:
                 print("#Debug 1-5# time:", current_second)
-                status, data = db_result_queue.get(timeout=0.1)
+                status, data = db_result_queue.get_nowait(timeout=0.1)
                 print("#Debug 2# time:", current_second)
 
                 # Successful transfer transaction
