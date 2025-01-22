@@ -89,23 +89,32 @@ def execute_transfers(host):
     try:
         while not stop_event.is_set():
             try:
+                print("#Debug A-1# time:")
                 with get_cursor(host) as (cursor, conn):
+                    print("#Debug A-2# time:")
                     with connection_lock:
                         connection_status['is_connected'] = True
+                    print("#Debug A-3# time:")
                     try:
+                        print("#Debug A-4# time:")
                         # Get 2 transfer accounts
                         try:
                             accounts = get_accounts(cursor)
+                            print("#Debug A-5# time:")
                         except ValueError as e:
+                            print("#Debug A-6# time:")
                             db_result_queue.put(('BUSI_ERROR', str(e)))
                             log_error(f"Insufficient accounts to perform transfers")
                             time.sleep(1)
                             continue
                         
+                        print("#Debug A-7# time:")
                         # Execute transfer transaction
                         sender, receiver = random.sample(accounts, 2)
+                        print("#Debug A-8# time:")
                         amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
                         
+                        print("#Debug A-9# time:")
                         success, message = transfer_amount(
                             sender['account_id'],
                             receiver['account_id'],
@@ -114,14 +123,17 @@ def execute_transfers(host):
                             conn
                         )
                         
+                        print("#Debug A-10# time:")
                         # Update statistics
                         with stats_lock:
                             if success:
+                                print("#Debug A-11# time:")
                                 transfer_stats['successful'] += 1
                                 # Get & send the last transaction record
                                 latest_transaction = get_latest_transaction(cursor)
                                 db_result_queue.put(('SUCCESS', latest_transaction))
                             else:
+                                print("#Debug A-12# time:")
                                 # Business error, such as insuficient balance
                                 db_result_queue.put(('BUSI_ERROR', message))
                                 transfer_stats['failed'] += 1
@@ -129,25 +141,34 @@ def execute_transfers(host):
                                 continue
                             
                     except Exception as e:
+                        print("#Debug A-13# time:")
                         # Business exception
                         with stats_lock:
                             transfer_stats['failed'] += 1
+                        print("#Debug A-14# time:")
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
+                        print("#Debug A-15# time:")
                     time.sleep(1)  # Execute one transfer per second
                     continue
             except DatabaseConnectionError as e:
+                print("#Debug A-16# time:")
                 # Handle database exception
                 with connection_lock:
                     connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
+                print("#Debug A-17# time:")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
+                print("#Debug A-18# time:")
                 time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
+                print("#Debug A-19# time:")
                 # 处理其他异常
                 log_error(f"Error in transfer: {str(e)}")
+                print("#Debug A-20# time:")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
+                print("#Debug A-21# time:")
                 time.sleep(1)
                 continue
 
