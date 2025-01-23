@@ -88,6 +88,7 @@ def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
+            time.sleep(1)
             try:
                 print("#Debug A-1# time:")
                 with get_cursor(host) as (cursor, conn):
@@ -104,8 +105,7 @@ def execute_transfers(host):
                         except ValueError as e:
                             print("#Debug A-6# time:")
                             db_result_queue.put(('BUSI_ERROR', str(e)))
-                            log_error(f"Insufficient accounts to perform transfers")
-                            time.sleep(1)
+                            log_error(f"Insufficient accounts to perform transfers")                            
                             continue
                         
                         print("#Debug A-7# time:")
@@ -137,7 +137,6 @@ def execute_transfers(host):
                                 # Business error, such as insuficient balance
                                 db_result_queue.put(('BUSI_ERROR', message))
                                 transfer_stats['failed'] += 1
-                                time.sleep(1)
                                 continue
                             
                     except Exception as e:
@@ -148,8 +147,7 @@ def execute_transfers(host):
                         print("#Debug A-14# time:")
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
                         print("#Debug A-15# time:")
-                    time.sleep(1)  # Execute one transfer per second
-                    continue
+                        continue
             except DatabaseConnectionError as e:
                 print("#Debug A-16# time:")
                 # Handle database exception
@@ -169,7 +167,6 @@ def execute_transfers(host):
                 print("#Debug A-20# time:")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
                 print("#Debug A-21# time:")
-                time.sleep(1)
                 continue
 
     except Exception as e:
@@ -182,6 +179,7 @@ def print_transfer_status():
     last_transaction_id = None
     
     while not stop_event.is_set():
+        time.sleep(1)
         print("#Debug 1# time:", current_second)
 
         # Check if current_second is a multiple of 30
@@ -295,7 +293,6 @@ def print_transfer_status():
                 line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                 print("#Debug 18# time:", current_second)
                 print(line)
-                time.sleep(1)
                 continue
         except Exception as e:
             print("#Debug 19# time:", current_second)
@@ -329,10 +326,7 @@ def print_transfer_status():
             )
             print("#Debug 22# time:", current_second)
             print(line)
-            time.sleep(1)
             continue
-        print("#Debug 23# time:", current_second)
-        time.sleep(1)
 
 def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
