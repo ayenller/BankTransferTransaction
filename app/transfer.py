@@ -59,7 +59,7 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
                 "Insufficient balance"
             ))
             print("#Debug B-6# time:")
-            conn.commit()
+            # conn.commit()
             return False, error_data
             
         print("#Debug B-7# time:")
@@ -109,7 +109,8 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
             None,
             elapsed_seconds
         )
-        conn.commit()
+        print("#Debug B-11-2# time:")
+        # conn.commit()
         return True, "Transfer successful"
         
     except Exception as e:
@@ -130,7 +131,7 @@ def transfer_amount(sender_id, receiver_id, amount, cursor, conn, elapsed_second
                 receiver_balance_before, receiver_balance_before,
                 str(e)[:200]
             ))
-            conn.commit()
+            # conn.commit()
         except:
             print("#Debug B-14# time:")
             pass  # Ignore error when inserting error record
