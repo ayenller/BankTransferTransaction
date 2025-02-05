@@ -63,26 +63,33 @@ def get_accounts(cursor):
 
 def get_latest_transaction(cursor):
     """Get the latest transaction record"""
-    cursor.execute("""
-        SELECT 
-            t.transaction_id,
-            t.status,
-            t.amount,
-            t.created_at,
-            s.account_name as sender_name,
-            r.account_name as receiver_name,
-            t.sender_balance_before,
-            t.sender_balance_after,
-            t.receiver_balance_before,
-            t.receiver_balance_after,
-            t.note
-        FROM banking_system.transactions t
-        JOIN banking_system.accounts s ON t.sender_id = s.account_id
-        JOIN banking_system.accounts r ON t.receiver_id = r.account_id
-        ORDER BY t.created_at DESC
-        LIMIT 1
-    """)
-    return cursor.fetchone()
+    try:
+        print("#Debug C-1# time:")
+        cursor.execute("""
+            SELECT 
+                t.transaction_id,
+                t.status,
+                t.amount,
+                t.created_at,
+                s.account_name as sender_name,
+                r.account_name as receiver_name,
+                t.sender_balance_before,
+                t.sender_balance_after,
+                t.receiver_balance_before,
+                t.receiver_balance_after,
+                t.note
+            FROM banking_system.transactions t
+            JOIN banking_system.accounts s ON t.sender_id = s.account_id
+            JOIN banking_system.accounts r ON t.receiver_id = r.account_id
+            ORDER BY t.created_at DESC
+            LIMIT 1
+        """)
+        print("#Debug C-2# time:")
+        return cursor.fetchone()
+    except Exception as e:
+        print("#Debug C-3# time:")
+        print(f"Error in get latest transaction: {str(e)}")
+        print("#Debug C-4# time:")
 
 def execute_transfers(host):
     """Thread function to execute transfers"""
@@ -133,7 +140,9 @@ def execute_transfers(host):
                                 try:
                                     print("#Debug A-11-1# time:")
                                     latest_transaction = get_latest_transaction(cursor)
+                                    print("#Debug A-11-1-2# time:")
                                     db_result_queue.put(('SUCCESS', latest_transaction))
+                                    print("#Debug A-11-1-3# time:")
                                 except Exception as e:
                                     print("#Debug A-11-2# time:")
                                     db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
