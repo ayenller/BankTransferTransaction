@@ -188,6 +188,7 @@ def print_transfer_status():
         try:
             try:
                 status, data = db_result_queue.get_nowait()
+                print("#1#", status, data)
 
                 # Successful transfer transaction
                 if status == 'SUCCESS' and data :
