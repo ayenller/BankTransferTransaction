@@ -124,16 +124,17 @@ def execute_transfers(host):
                                 # Get & send the last transaction record
                                 try:
                                     # latest_transaction = get_latest_transaction(cursor)
-                                    data = ''
-                                    data['status'] = 'SUCCESS'
-                                    data['sender_name'] = sender['account_name']
-                                    data['receiver_name'] = receiver['account_name']
-                                    data['amount'] = amount
-                                    data['sender_balance_before'] = sender['balance']
-                                    data['sender_balance_after'] = sender['balance'] - amount
-                                    data['receiver_balance_before'] = receiver['balance']
-                                    data['receiver_balance_after'] = receiver['balance'] + amount
-                                    # data['note'] or ''
+                                    data = {
+                                        'status': 'SUCCESS',
+                                        'sender_name': sender['account_name'],
+                                        'receiver_name': receiver['account_name'],
+                                        'amount': amount,
+                                        'sender_balance_before': sender['balance'],
+                                        'sender_balance_after': sender['balance'] - amount,
+                                        'receiver_balance_before': receiver['balance'],
+                                        'receiver_balance_after': receiver['balance'] + amount,
+                                        'note': ''
+                                    }
                                     db_result_queue.put(('SUCCESS', data))
                                     continue
                                 except Exception as e:
