@@ -175,7 +175,7 @@ def execute_transfers(host):
 def print_transfer_status():
     """Thread function to print transfer status"""
     current_second = 0
-    last_transaction_id = None
+    # last_transaction_id = None
     
     while not stop_event.is_set():
         time.sleep(1)
@@ -190,8 +190,8 @@ def print_transfer_status():
                 status, data = db_result_queue.get_nowait()
 
                 # Successful transfer transaction
-                if status == 'SUCCESS' and data and data['transaction_id'] != last_transaction_id:
-                    last_transaction_id = data['transaction_id']
+                if status == 'SUCCESS' and data :
+                    # last_transaction_id = data['transaction_id']
                     line = format_transfer_line(
                         current_second,
                         data['status'],
