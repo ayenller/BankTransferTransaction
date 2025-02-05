@@ -64,7 +64,6 @@ def get_accounts(cursor):
 def get_latest_transaction(cursor):
     """Get the latest transaction record"""
     try:
-        print("#Debug C-1# time:")
         cursor.execute("""
             SELECT 
                 t.transaction_id,
@@ -84,12 +83,9 @@ def get_latest_transaction(cursor):
             ORDER BY t.created_at DESC
             LIMIT 1
         """)
-        print("#Debug C-2# time:")
         return cursor.fetchone()
     except Exception as e:
-        print("#Debug C-3# time:")
         print(f"Error in get latest transaction: {str(e)}")
-        print("#Debug C-4# time:")
 
 def execute_transfers(host):
     """Thread function to execute transfers"""
@@ -97,31 +93,22 @@ def execute_transfers(host):
         while not stop_event.is_set():
             time.sleep(1)
             try:
-                print("#Debug A-1# time:")
                 with get_cursor(host) as (cursor, conn):
-                    print("#Debug A-2# time:")
                     with connection_lock:
                         connection_status['is_connected'] = True
-                    print("#Debug A-3# time:")
                     try:
-                        print("#Debug A-4# time:")
                         # Get 2 transfer accounts
                         try:
                             accounts = get_accounts(cursor)
-                            print("#Debug A-5# time:")
                         except ValueError as e:
-                            print("#Debug A-6# time:")
                             db_result_queue.put(('BUSI_ERROR', str(e)))
                             log_error(f"Insufficient accounts to perform transfers")                            
                             continue
                         
-                        print("#Debug A-7# time:")
                         # Execute transfer transaction
                         sender, receiver = random.sample(accounts, 2)
-                        print("#Debug A-8# time:")
                         amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
                         
-                        print("#Debug A-9# time:")
                         success, message = transfer_amount(
                             sender['account_id'],
                             receiver['account_id'],
@@ -130,61 +117,54 @@ def execute_transfers(host):
                             conn
                         )
                         
-                        print("#Debug A-10# time:")
                         # Update statistics
                         with stats_lock:
                             if success:
-                                print("#Debug A-11# time:")
                                 transfer_stats['successful'] += 1
                                 # Get & send the last transaction record
                                 try:
-                                    print("#Debug A-11-1# time:")
-                                    latest_transaction = get_latest_transaction(cursor)
-                                    print("#Debug A-11-1-2# time:")
-                                    db_result_queue.put(('SUCCESS', latest_transaction))
-                                    print("#Debug A-11-1-3# time:")
+                                    # latest_transaction = get_latest_transaction(cursor)
+                                    data = ''
+                                    data['status'] = 'SUCCESS'
+                                    data['sender_name'] = sender['account_name']
+                                    data['receiver_name'] = receiver['account_name']
+                                    data['amount'] = amount
+                                    data['sender_balance_before'] = sender['balance']
+                                    data['sender_balance_after'] = sender['balance'] - amount
+                                    data['receiver_balance_before'] = receiver['balance']
+                                    data['receiver_balance_after'] = receiver['balance'] + amount
+                                    # data['note'] or ''
+                                    db_result_queue.put(('SUCCESS', data))
                                     continue
                                 except Exception as e:
-                                    print("#Debug A-11-2# time:")
                                     db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                                    print("#Debug A-11-3# time:")
                                     # time.sleep(connection_retry_delay)
                                     continue
                             else:
-                                print("#Debug A-12# time:")
                                 # Business error, such as insuficient balance
                                 db_result_queue.put(('BUSI_ERROR', message))
                                 transfer_stats['failed'] += 1
                                 continue
                             
                     except Exception as e:
-                        print("#Debug A-13# time:")
                         # Business exception
                         with stats_lock:
                             transfer_stats['failed'] += 1
-                        print("#Debug A-14# time:")
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
-                        print("#Debug A-15# time:")
                         continue
             except DatabaseConnectionError as e:
-                print("#Debug A-16# time:")
                 # Handle database exception
                 with connection_lock:
                     connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
-                print("#Debug A-17# time:")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                print("#Debug A-18# time:")
                 time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
-                print("#Debug A-19# time:")
                 # 处理其他异常
                 log_error(f"Error in transfer: {str(e)}")
-                print("#Debug A-20# time:")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
-                print("#Debug A-21# time:")
                 continue
 
     except Exception as e:
@@ -198,22 +178,15 @@ def print_transfer_status():
     
     while not stop_event.is_set():
         time.sleep(1)
-        print("#Debug 1# time:", current_second)
 
         # Check if current_second is a multiple of 30
         if current_second % 30 == 0:
-            print("#Debug 1-1# time:", current_second)
             print_transfer_header()  # Print header every 30 seconds
-        print("#Debug 1-2# time:", current_second)
         current_second += 1
-        print("#Debug 1-3# time:", current_second)
 
         try:
-            print("#Debug 1-4# time:", current_second)
             try:
-                print("#Debug 1-5# time:", current_second)
                 status, data = db_result_queue.get_nowait()
-                print("#Debug 2# time:", current_second)
 
                 # Successful transfer transaction
                 if status == 'SUCCESS' and data and data['transaction_id'] != last_transaction_id:
@@ -230,12 +203,10 @@ def print_transfer_status():
                         data['receiver_balance_after'],
                         data['note'] or ''
                     )
-                    print("#Debug 3# time:", current_second)
                     print(line)
                 
                 # Business error
                 elif status == 'BUSI_ERROR':
-                    print("#Debug 4# time:", current_second)
                     # Check if data contains full transaction info
                     if isinstance(data, dict) and data.get('amount', 0) > 0:
                         line = format_transfer_line(
@@ -250,7 +221,6 @@ def print_transfer_status():
                             data['receiver_balance_after'],
                             data['note']
                         )
-                        print("#Debug 5# time:", current_second)
                     else:
                         # Basic error info
                         line = format_transfer_line(
@@ -258,15 +228,12 @@ def print_transfer_status():
                             status,
                             note=str(data)
                         )
-                        print("#Debug 6# time:", current_second)
                     print(line)
                 
                 # Database error
                 elif status == 'DB_ERROR':
-                    print("#Debug 7# time:", current_second)
                     # Check if data contains full transaction info
                     if isinstance(data, dict) and data.get('amount', 0) > 0:
-                        print("#Debug 8# time:", current_second)
                         line = format_transfer_line(
                             current_second,
                             data['status'],
@@ -280,43 +247,31 @@ def print_transfer_status():
                             data['note']
                         )
                     else:
-                        print("#Debug 9# time:", current_second)
                         # Basic error info
                         line = format_transfer_line(
                             current_second,
                             status,
                             note=str(data)
                         )
-                        print("#Debug 10# time:", current_second)
                     print(line)
                 # Database retry
                 elif status == 'DB_RETRY':
-                    print("#Debug 11# time:", current_second)
                     line = format_transfer_line(current_second, status, note=str(data))
-                    print("#Debug 12# time:", current_second)
                     print(line)
                 # Database recovery
                 elif status == 'DB_RECOVERED':
-                    print("#Debug 13# time:", current_second)
                     line = format_transfer_line(current_second, status, note=str(data))
-                    print("#Debug 14# time:", current_second)
                     print(line)
                 else:
-                    print("#Debug 15# time:", current_second)
                     line = format_transfer_line(current_second, status, note=str(data))
-                    print("#Debug 16# time:", current_second)
                     print(line)
             except Empty:
-                print("#Debug 17# time:", current_second)
                 line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
-                print("#Debug 18# time:", current_second)
                 print(line)
                 continue
         except Exception as e:
-            print("#Debug 19# time:", current_second)
             with connection_lock:
                 is_connected = connection_status['is_connected']
-            print("#Debug 20# time:", current_second)
             error_data = {
                 'status': 'DB_ERROR' if not is_connected else 'ERROR',
                 'sender_name': 'N/A',
@@ -328,7 +283,6 @@ def print_transfer_status():
                 'receiver_balance_after': 0.00,
                 'note': str(e) 
             }
-            print("#Debug 21# time:", current_second)
             
             line = format_transfer_line(
                 current_second,
@@ -342,7 +296,6 @@ def print_transfer_status():
                 error_data['receiver_balance_after'],
                 error_data['note']
             )
-            print("#Debug 22# time:", current_second)
             print(line)
             continue
 
