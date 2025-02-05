@@ -130,8 +130,15 @@ def execute_transfers(host):
                                 print("#Debug A-11# time:")
                                 transfer_stats['successful'] += 1
                                 # Get & send the last transaction record
-                                latest_transaction = get_latest_transaction(cursor)
-                                db_result_queue.put(('SUCCESS', latest_transaction))
+                                try:
+                                    latest_transaction = get_latest_transaction(cursor)
+                                    db_result_queue.put(('SUCCESS', latest_transaction))
+                                except Exception as e:
+                                    print("#Debug A-11-2# time:")
+                                    db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
+                                    print("#Debug A-11-3# time:")
+                                    # time.sleep(connection_retry_delay)
+                                    continue
                             else:
                                 print("#Debug A-12# time:")
                                 # Business error, such as insuficient balance
