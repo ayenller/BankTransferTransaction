@@ -38,6 +38,7 @@ def get_db_connection(host, config_type="prod", max_retries=3000, retry_delay=1)
             
             # Test connection is alive
             cursor = conn.cursor()
+            cursor.execute("SET SESSION MAX_EXECUTION_TIME=1000")
             cursor.execute("SELECT 1")
             cursor.fetchone()
             cursor.close()

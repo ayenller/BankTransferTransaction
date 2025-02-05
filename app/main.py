@@ -131,6 +131,7 @@ def execute_transfers(host):
                                 transfer_stats['successful'] += 1
                                 # Get & send the last transaction record
                                 try:
+                                    print("#Debug A-11-1# time:")
                                     latest_transaction = get_latest_transaction(cursor)
                                     db_result_queue.put(('SUCCESS', latest_transaction))
                                 except Exception as e:
