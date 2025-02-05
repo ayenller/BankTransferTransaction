@@ -143,6 +143,7 @@ def execute_transfers(host):
                                     print("#Debug A-11-1-2# time:")
                                     db_result_queue.put(('SUCCESS', latest_transaction))
                                     print("#Debug A-11-1-3# time:")
+                                    continue
                                 except Exception as e:
                                     print("#Debug A-11-2# time:")
                                     db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
