@@ -178,20 +178,24 @@ def print_transfer_status():
     current_second = 0
     # last_transaction_id = None
     
+    print("#0#")
     while not stop_event.is_set():
+        print("#1#")
         time.sleep(1)
+        print("#2#")
 
         # Check if current_second is a multiple of 30
         if current_second % 30 == 0:
             print_transfer_header()  # Print header every 30 seconds
         current_second += 1
+        print("#3#")
 
         try:
             try:
                 try:
-                    print("#0#")
+                    print("#4#")
                     status, data = db_result_queue.get_nowait()
-                    print("#1#")
+                    print("#5#")
                 except queue.Empty:
                     line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                     print(line)
@@ -273,7 +277,7 @@ def print_transfer_status():
                 else:
                     line = format_transfer_line(current_second, status, note=str(data))
                     print(line)
-            except Empty:
+            except Exception as e:
                 line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                 print(line)
                 continue
@@ -306,6 +310,7 @@ def print_transfer_status():
             )
             print(line)
             continue
+        print("#000#")
 
 def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
