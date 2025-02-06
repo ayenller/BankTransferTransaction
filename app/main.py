@@ -98,6 +98,7 @@ def execute_transfers(host):
             print("#A-2#")
             try:
                 with get_cursor(host) as (cursor, conn):
+                    print("#A-3#")
                     try:
                         # Get 2 transfer accounts
                         try:
@@ -106,7 +107,7 @@ def execute_transfers(host):
                             db_result_queue.put(('BUSI_ERROR', str(e)))
                             log_error(f"Insufficient accounts to perform transfers")                            
                             continue
-                        
+                        print("#A-4#")
                         # Execute transfer transaction
                         sender, receiver = random.sample(accounts, 2)
                         amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
@@ -118,7 +119,7 @@ def execute_transfers(host):
                             cursor,
                             conn
                         )
-                        
+                        print("#A-5#")
                         # Update statistics
                         if success:
                             transfer_stats['successful'] += 1
@@ -141,6 +142,7 @@ def execute_transfers(host):
                                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
                                 continue
                         else:
+                            print("#A-6#")
                             # Business error, such as insuficient balance
                             db_result_queue.put(('BUSI_ERROR', message))
                             transfer_stats['failed'] += 1
@@ -148,18 +150,21 @@ def execute_transfers(host):
                             
                     except Exception as e:
                         # Business exception
+                        print("#A-7#")
                         transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
                         continue
             except DatabaseConnectionError as e:
                 # Handle database exception
+                print("#A-8#")
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                time.sleep(connection_retry_delay)
+                # time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
                 # 处理其他异常
+                print("#A-9#")
                 log_error(f"Error in transfer: {str(e)}")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
                 continue
