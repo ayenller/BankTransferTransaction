@@ -96,8 +96,6 @@ def execute_transfers(host):
             time.sleep(1)
             try:
                 with get_cursor(host) as (cursor, conn):
-                    # with connection_lock:
-                        # connection_status['is_connected'] = True
                     try:
                         # Get 2 transfer accounts
                         try:
@@ -120,45 +118,39 @@ def execute_transfers(host):
                         )
                         
                         # Update statistics
-                        with stats_lock:
-                            if success:
-                                transfer_stats['successful'] += 1
-                                # Get & send the last transaction record
-                                try:
-                                    # latest_transaction = get_latest_transaction(cursor)
-                                    data = {
-                                        'status': 'SUCCESS',
-                                        'sender_name': sender['account_name'],
-                                        'receiver_name': receiver['account_name'],
-                                        'amount': amount,
-                                        'sender_balance_before': sender['balance'],
-                                        'sender_balance_after': sender['balance'] - amount,
-                                        'receiver_balance_before': receiver['balance'],
-                                        'receiver_balance_after': receiver['balance'] + amount,
-                                        'note': ''
-                                    }
-                                    db_result_queue.put(('SUCCESS', data))
-                                    continue
-                                except Exception as e:
-                                    db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                                    # await time.sleep(connection_retry_delay)
-                                    continue
-                            else:
-                                # Business error, such as insuficient balance
-                                db_result_queue.put(('BUSI_ERROR', message))
-                                transfer_stats['failed'] += 1
+                        if success:
+                            transfer_stats['successful'] += 1
+                            # Get & send the last transaction record
+                            try:
+                                data = {
+                                    'status': 'SUCCESS',
+                                    'sender_name': sender['account_name'],
+                                    'receiver_name': receiver['account_name'],
+                                    'amount': amount,
+                                    'sender_balance_before': sender['balance'],
+                                    'sender_balance_after': sender['balance'] - amount,
+                                    'receiver_balance_before': receiver['balance'],
+                                    'receiver_balance_after': receiver['balance'] + amount,
+                                    'note': ''
+                                }
+                                db_result_queue.put(('SUCCESS', data))
                                 continue
+                            except Exception as e:
+                                db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
+                                continue
+                        else:
+                            # Business error, such as insuficient balance
+                            db_result_queue.put(('BUSI_ERROR', message))
+                            transfer_stats['failed'] += 1
+                            continue
                             
                     except Exception as e:
                         # Business exception
-                        with stats_lock:
-                            transfer_stats['failed'] += 1
+                        transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
                         continue
             except DatabaseConnectionError as e:
                 # Handle database exception
-                # with connection_lock:
-                    # connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
@@ -177,14 +169,14 @@ def execute_transfers(host):
 def print_transfer_status():
     """Thread function to print transfer status"""
     current_second = 0
-    # last_transaction_id = None
     
     print("#0#")
     while not stop_event.is_set():
         print("#1#")
         try:
             print("#1-1#")
-            threading.Event().wait(timeout=1)
+            time.sleep(1)
+            # threading.Event().wait(timeout=1)
             print("#1-2#")
         except Exception as e:
             print("#1-3#")
@@ -210,7 +202,6 @@ def print_transfer_status():
                     continue
                 # Successful transfer transaction
                 if status == 'SUCCESS' and data :
-                    # last_transaction_id = data['transaction_id']
                     line = format_transfer_line(
                         current_second,
                         data['status'],
@@ -290,10 +281,8 @@ def print_transfer_status():
                 print(line)
                 continue
         except Exception as e:
-            # with connection_lock:
-                # is_connected = connection_status['is_connected']
             error_data = {
-                'status': 'DB_ERROR' if not is_connected else 'ERROR',
+                'status': 'DB_ERROR',
                 'sender_name': 'N/A',
                 'receiver_name': 'N/A',
                 'amount': 0.00,
