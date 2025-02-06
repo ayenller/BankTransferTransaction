@@ -189,6 +189,7 @@ def print_transfer_status():
         try:
             try:
                 try:
+                    print("#0#", status, data)
                     status, data = db_result_queue.get_nowait()
                     print("#1#", status, data)
                 except queue.Empty:
