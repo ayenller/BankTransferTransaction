@@ -152,6 +152,7 @@ def execute_transfers(host):
                             # Business error, such as insuficient balance
                             db_result_queue.put(('BUSI_ERROR', message))
                             transfer_stats['failed'] += 1
+                            print("#A-6-1#")
                             continue
                             
                     except Exception as e:
@@ -159,6 +160,7 @@ def execute_transfers(host):
                         print("#A-7#")
                         transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
+                        print("#A-7-1#")
                         continue
             except DatabaseConnectionError as e:
                 # Handle database exception
@@ -166,6 +168,7 @@ def execute_transfers(host):
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
+                print("#A-8-1#")
                 # time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
