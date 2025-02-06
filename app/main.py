@@ -32,7 +32,7 @@ connection_lock = threading.Lock()
 def signal_handler(signum, frame):
     stop_event.set()
     print("\n\nProgram terminating, please wait...")
-    asyncio.sleep(2)
+    time.sleep(2)
     print_summary(time.time() - start_time)
     sys.exit(0)
 
@@ -93,7 +93,7 @@ def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
-            asyncio.sleep(1)
+            time.sleep(1)
             try:
                 with get_cursor(host) as (cursor, conn):
                     with connection_lock:
@@ -141,7 +141,7 @@ def execute_transfers(host):
                                     continue
                                 except Exception as e:
                                     db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                                    # await asyncio.sleep(connection_retry_delay)
+                                    # await time.sleep(connection_retry_delay)
                                     continue
                             else:
                                 # Business error, such as insuficient balance
@@ -162,7 +162,7 @@ def execute_transfers(host):
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                asyncio.sleep(connection_retry_delay)
+                time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
                 # 处理其他异常
@@ -185,7 +185,7 @@ def print_transfer_status():
         try:
             print("#1-1#")
             threading
-            asyncio.sleep(1)
+            time.wait(1)
             print("#1-2#")
         except Exception as e:
             print("#1-3#")
