@@ -36,9 +36,9 @@ async def signal_handler(signum, frame):
     print_summary(time.time() - start_time)
     sys.exit(0)
 
-async def cleanup():
+def cleanup():
     stop_event.set()
-    await asyncio.sleep(1)
+    time.sleep(1)
 
 def print_summary(total_time):
     """Print transfer summary"""
@@ -321,7 +321,7 @@ async def print_transfer_status():
             continue
         print("#000#")
 
-async def main(duration_minutes=1, host=None):
+def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
     global start_time
     start_time = time.time()
@@ -339,13 +339,13 @@ async def main(duration_minutes=1, host=None):
     
     # Wait for specified duration
     try:
-        await asyncio.sleep(duration_minutes * 60)
+        time.sleep(duration_minutes * 60)
         stop_event.set()
-        await asyncio.sleep(2)  # Wait for threads to finish
+        time.sleep(2)  # Wait for threads to finish
         print_summary(time.time() - start_time)
     except KeyboardInterrupt:
         stop_event.set()
-        await asyncio.sleep(2)
+        time.sleep(2)
         print_summary(time.time() - start_time)
 
 if __name__ == "__main__":
