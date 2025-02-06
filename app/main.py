@@ -93,7 +93,9 @@ def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
+            print("#A-1#")
             time.sleep(1)
+            print("#A-2#")
             try:
                 with get_cursor(host) as (cursor, conn):
                     try:
