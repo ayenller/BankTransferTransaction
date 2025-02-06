@@ -335,7 +335,7 @@ def main(duration_minutes=1, host=None):
     # Start transfer execution thread
     transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
     transfer_thread.daemon = True
-    transfer_thread.start()
+    # transfer_thread.start()
     
     # Start status printing thread
     printer_thread = threading.Thread(target=print_transfer_status)
