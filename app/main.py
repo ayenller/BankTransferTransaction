@@ -2,6 +2,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 import time
+import asyncio
 import queue
 import threading
 import signal
@@ -28,16 +29,16 @@ connection_retry_delay = 5  # seconds
 connection_status = {'is_connected': True}
 connection_lock = threading.Lock()
 
-def signal_handler(signum, frame):
+async def signal_handler(signum, frame):
     stop_event.set()
     print("\n\nProgram terminating, please wait...")
-    time.sleep(2)
+    await asyncio.sleep(2)
     print_summary(time.time() - start_time)
     sys.exit(0)
 
-def cleanup():
+async def cleanup():
     stop_event.set()
-    time.sleep(1)
+    await asyncio.sleep(1)
 
 def print_summary(total_time):
     """Print transfer summary"""
@@ -88,11 +89,11 @@ def get_latest_transaction(cursor):
     except Exception as e:
         print(f"Error in get latest transaction: {str(e)}")
 
-def execute_transfers(host):
+async def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
-            time.sleep(1)
+            await asyncio.sleep(1)
             try:
                 with get_cursor(host) as (cursor, conn):
                     with connection_lock:
@@ -140,7 +141,7 @@ def execute_transfers(host):
                                     continue
                                 except Exception as e:
                                     db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                                    # time.sleep(connection_retry_delay)
+                                    # await asyncio.sleep(connection_retry_delay)
                                     continue
                             else:
                                 # Business error, such as insuficient balance
@@ -161,7 +162,7 @@ def execute_transfers(host):
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                time.sleep(connection_retry_delay)
+                await asyncio.sleep(connection_retry_delay)
                 continue
             except Exception as e:
                 # 处理其他异常
@@ -173,7 +174,7 @@ def execute_transfers(host):
         print(f"Error in transfer thread: {str(e)}")
         stop_event.set()
 
-def print_transfer_status():
+async def print_transfer_status():
     """Thread function to print transfer status"""
     current_second = 0
     # last_transaction_id = None
@@ -183,7 +184,8 @@ def print_transfer_status():
         print("#1#")
         try:
             print("#1-1#")
-            time.sleep(1)
+            threading
+            await asyncio.sleep(1)
             print("#1-2#")
         except Exception as e:
             print("#1-3#")
@@ -319,7 +321,7 @@ def print_transfer_status():
             continue
         print("#000#")
 
-def main(duration_minutes=1, host=None):
+async def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
     global start_time
     start_time = time.time()
@@ -337,13 +339,13 @@ def main(duration_minutes=1, host=None):
     
     # Wait for specified duration
     try:
-        time.sleep(duration_minutes * 60)
+        await asyncio.sleep(duration_minutes * 60)
         stop_event.set()
-        time.sleep(2)  # Wait for threads to finish
+        await asyncio.sleep(2)  # Wait for threads to finish
         print_summary(time.time() - start_time)
     except KeyboardInterrupt:
         stop_event.set()
-        time.sleep(2)
+        await asyncio.sleep(2)
         print_summary(time.time() - start_time)
 
 if __name__ == "__main__":
