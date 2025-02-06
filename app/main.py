@@ -2,6 +2,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 import time
+import queue
 import threading
 import signal
 import atexit
@@ -187,9 +188,13 @@ def print_transfer_status():
 
         try:
             try:
-                status, data = db_result_queue.get_nowait()
-                print("#1#", status, data)
-
+                try:
+                    status, data = db_result_queue.get_nowait()
+                    print("#1#", status, data)
+                except queue.Empty:
+                    line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
+                    print(line)
+                    continue
                 # Successful transfer transaction
                 if status == 'SUCCESS' and data :
                     # last_transaction_id = data['transaction_id']
