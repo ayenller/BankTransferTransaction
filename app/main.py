@@ -122,9 +122,12 @@ def execute_transfers(host):
                         print("#A-5#")
                         # Update statistics
                         if success:
+                            print("#A-5-1#")
                             transfer_stats['successful'] += 1
+                            print("#A-5-0#")
                             # Get & send the last transaction record
                             try:
+                                print("#A-5-2#")
                                 data = {
                                     'status': 'SUCCESS',
                                     'sender_name': sender['account_name'],
@@ -137,9 +140,12 @@ def execute_transfers(host):
                                     'note': ''
                                 }
                                 db_result_queue.put(('SUCCESS', data))
+                                print("#A-5-3#")
                                 continue
                             except Exception as e:
+                                print("#A-5-4#")
                                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
+                                print("#A-5-5#")
                                 continue
                         else:
                             print("#A-6#")
@@ -170,6 +176,7 @@ def execute_transfers(host):
                 continue
 
     except Exception as e:
+        print("#A-10#")
         print(f"Error in transfer thread: {str(e)}")
         stop_event.set()
 
