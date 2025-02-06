@@ -184,7 +184,6 @@ def print_transfer_status():
         print("#1#")
         try:
             print("#1-1#")
-            threading
             threading.Event().wait(1)
             print("#1-2#")
         except Exception as e:
