@@ -29,10 +29,10 @@ connection_retry_delay = 5  # seconds
 connection_status = {'is_connected': True}
 connection_lock = threading.Lock()
 
-async def signal_handler(signum, frame):
+def signal_handler(signum, frame):
     stop_event.set()
     print("\n\nProgram terminating, please wait...")
-    await asyncio.sleep(2)
+    asyncio.sleep(2)
     print_summary(time.time() - start_time)
     sys.exit(0)
 
@@ -89,11 +89,11 @@ def get_latest_transaction(cursor):
     except Exception as e:
         print(f"Error in get latest transaction: {str(e)}")
 
-async def execute_transfers(host):
+def execute_transfers(host):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
-            await asyncio.sleep(1)
+            asyncio.sleep(1)
             try:
                 with get_cursor(host) as (cursor, conn):
                     with connection_lock:
@@ -162,7 +162,7 @@ async def execute_transfers(host):
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                await asyncio.sleep(connection_retry_delay)
+                asyncio.sleep(connection_retry_delay)
                 continue
             except Exception as e:
                 # 处理其他异常
@@ -174,7 +174,7 @@ async def execute_transfers(host):
         print(f"Error in transfer thread: {str(e)}")
         stop_event.set()
 
-async def print_transfer_status():
+def print_transfer_status():
     """Thread function to print transfer status"""
     current_second = 0
     # last_transaction_id = None
@@ -185,7 +185,7 @@ async def print_transfer_status():
         try:
             print("#1-1#")
             threading
-            await asyncio.sleep(1)
+            asyncio.sleep(1)
             print("#1-2#")
         except Exception as e:
             print("#1-3#")
