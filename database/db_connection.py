@@ -63,7 +63,7 @@ def get_db_connection(host, config_type="prod", max_retries=3000, retry_delay=1)
     raise DatabaseConnectionError(f"Failed to connect to database after {max_retries} attempts. Last error: {last_error}")
 
 @contextmanager
-def get_cursor(host, config_type="prod", max_retries=3600, retry_delay=1):
+def get_cursor(host, config_type="prod", max_retries=3, retry_delay=1):
     """
     Get database cursor with connection retry mechanism
     
