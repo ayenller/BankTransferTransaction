@@ -182,9 +182,13 @@ def print_transfer_status():
     while not stop_event.is_set():
         print("#1#")
         try:
+            print("#1-1#")
             time.sleep(1)
+            print("#1-2#")
         except Exception as e:
+            print("#1-3#")
             print("#exception#", str(e))
+            print("#1-4#")
             continue
 
         # Check if current_second is a multiple of 30
