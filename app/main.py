@@ -96,8 +96,8 @@ def execute_transfers(host):
             time.sleep(1)
             try:
                 with get_cursor(host) as (cursor, conn):
-                    with connection_lock:
-                        connection_status['is_connected'] = True
+                    # with connection_lock:
+                        # connection_status['is_connected'] = True
                     try:
                         # Get 2 transfer accounts
                         try:
@@ -157,8 +157,8 @@ def execute_transfers(host):
                         continue
             except DatabaseConnectionError as e:
                 # Handle database exception
-                with connection_lock:
-                    connection_status['is_connected'] = False
+                # with connection_lock:
+                    # connection_status['is_connected'] = False
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
@@ -290,8 +290,8 @@ def print_transfer_status():
                 print(line)
                 continue
         except Exception as e:
-            with connection_lock:
-                is_connected = connection_status['is_connected']
+            # with connection_lock:
+                # is_connected = connection_status['is_connected']
             error_data = {
                 'status': 'DB_ERROR' if not is_connected else 'ERROR',
                 'sender_name': 'N/A',
