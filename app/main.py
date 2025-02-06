@@ -189,9 +189,9 @@ def print_transfer_status():
         try:
             try:
                 try:
-                    print("#0#", status, data)
+                    print("#0#")
                     status, data = db_result_queue.get_nowait()
-                    print("#1#", status, data)
+                    print("#1#")
                 except queue.Empty:
                     line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                     print(line)
