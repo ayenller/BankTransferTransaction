@@ -24,10 +24,10 @@ from utils.queue_utils import db_result_queue
 
 stop_event = threading.Event()
 transfer_stats = {'successful': 0, 'failed': 0}
-stats_lock = threading.Lock()
+# stats_lock = threading.Lock()
 connection_retry_delay = 5  # seconds
 connection_status = {'is_connected': True}
-connection_lock = threading.Lock()
+# connection_lock = threading.Lock()
 
 def signal_handler(signum, frame):
     stop_event.set()
@@ -333,8 +333,8 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     
     # Start transfer execution thread
-    transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
-    transfer_thread.daemon = True
+    # transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
+    # transfer_thread.daemon = True
     # transfer_thread.start()
     
     # Start status printing thread
