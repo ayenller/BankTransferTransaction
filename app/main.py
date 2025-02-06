@@ -333,14 +333,14 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     
     # Start transfer execution thread
-    # transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
-    # transfer_thread.daemon = True
-    # transfer_thread.start()
+    transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
+    transfer_thread.daemon = True
+    transfer_thread.start()
     
     # Start status printing thread
-    printer_thread = threading.Thread(target=print_transfer_status)
-    printer_thread.daemon = True
-    printer_thread.start()
+    # printer_thread = threading.Thread(target=print_transfer_status)
+    # printer_thread.daemon = True
+    # printer_thread.start()
     
     # Wait for specified duration
     try:
