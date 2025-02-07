@@ -8,7 +8,6 @@ import multiprocessing
 import threading
 import signal
 import atexit
-from multiprocessing import Queue, Empty
 
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -332,7 +331,7 @@ def main(duration_minutes=1, host=None):
     global start_time
     start_time = time.time()
     setup_logger()
-    db_result_queue = Queue() 
+    db_result_queue = multiprocessing.Queue() 
 
     # Start transfer execution thread
     transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,db_result_queue,))
