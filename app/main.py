@@ -93,12 +93,9 @@ def execute_transfers(host, db_result_queue):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
-            print("#A-1#")
             time.sleep(1)
-            print("#A-2#")
             try:
                 with get_cursor(host) as (cursor, conn):
-                    print("#A-3#")
                     try:
                         # Get 2 transfer accounts
                         try:
@@ -107,7 +104,6 @@ def execute_transfers(host, db_result_queue):
                             db_result_queue.put(('BUSI_ERROR', str(e)))
                             log_error(f"Insufficient accounts to perform transfers")                            
                             continue
-                        print("#A-4#")
                         # Execute transfer transaction
                         sender, receiver = random.sample(accounts, 2)
                         amount = Decimal(str(random.randrange(1, 11) * 100)).quantize(Decimal('0.00'))
@@ -119,15 +115,11 @@ def execute_transfers(host, db_result_queue):
                             cursor,
                             conn
                         )
-                        print("#A-5#")
                         # Update statistics
                         if success:
-                            print("#A-5-1#")
                             transfer_stats['successful'] += 1
-                            print("#A-5-0#")
                             # Get & send the last transaction record
                             try:
-                                print("#A-5-2#")
                                 data = {
                                     'status': 'SUCCESS',
                                     'sender_name': sender['account_name'],
@@ -140,46 +132,35 @@ def execute_transfers(host, db_result_queue):
                                     'note': ''
                                 }
                                 db_result_queue.put(('SUCCESS', data))
-                                print("#A-5-3#")
                                 continue
                             except Exception as e:
-                                print("#A-5-4#")
                                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                                print("#A-5-5#")
                                 continue
                         else:
-                            print("#A-6#")
                             # Business error, such as insuficient balance
                             db_result_queue.put(('BUSI_ERROR', message))
                             transfer_stats['failed'] += 1
-                            print("#A-6-1#")
                             continue
                             
                     except Exception as e:
                         # Business exception
-                        print("#A-7#")
                         transfer_stats['failed'] += 1
                         db_result_queue.put(('BUSI_ERROR', f"Transaction failed: {str(e)}"))
-                        print("#A-7-1#")
                         continue
             except DatabaseConnectionError as e:
                 # Handle database exception
-                print("#A-8#")
                 log_error(f"Database connection lost: {e}")
                 # Send database error message to queue
                 db_result_queue.put(('DB_ERROR', f"Database error: {str(e)}"))
-                print("#A-8-1#")
                 # time.sleep(connection_retry_delay)
                 continue
             except Exception as e:
                 # 处理其他异常
-                print("#A-9#")
                 log_error(f"Error in transfer: {str(e)}")
                 db_result_queue.put(('DB_ERROR', f"System error: {str(e)}"))
                 continue
 
     except Exception as e:
-        print("#A-10#")
         print(f"Error in transfer thread: {str(e)}")
         stop_event.set()
 
@@ -187,33 +168,19 @@ def print_transfer_status(db_result_queue):
     """Thread function to print transfer status"""
     current_second = 0
     
-    print("#0#")
     while not stop_event.is_set():
-        print("#1#")
-        try:
-            print("#1-1#")
-            time.sleep(1)
-            # multiprocessing.Event().wait(timeout=1)
-            print("#1-2#")
-        except Exception as e:
-            print("#1-3#")
-            print("#exception#", str(e))
-            print("#1-4#")
-            continue
+        time.sleep(1)
 
         # Check if current_second is a multiple of 30
         if current_second % 30 == 0:
             print_transfer_header()  # Print header every 30 seconds
         current_second += 1
-        print("#3#")
 
         try:
             try:
                 try:
-                    print("#4#")
                     status, data = db_result_queue.get_nowait()
-                    print("#5#")
-                except queue.Empty:
+                except multiprocessing.Queue.empty:
                     line = format_transfer_line(current_second, 'WAIT', note='Waiting for transaction...')
                     print(line)
                     continue
@@ -324,7 +291,6 @@ def print_transfer_status(db_result_queue):
             )
             print(line)
             continue
-        print("#000#")
 
 def main(duration_minutes=1, host=None):
     """Main function to start transfer system"""
