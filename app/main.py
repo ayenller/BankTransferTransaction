@@ -21,7 +21,7 @@ from database.db_connection import get_cursor, DatabaseConnectionError
 from app.transfer import transfer_amount
 from app.logger import setup_logger, log_error
 from utils.format_utils import format_transfer_line, print_transfer_header
-from utils.queue_utils import db_result_queue
+# from utils.queue_utils import db_result_queue
 
 stop_event = multiprocessing.Event()
 transfer_stats = {'successful': 0, 'failed': 0}
@@ -332,7 +332,8 @@ def main(duration_minutes=1, host=None):
     global start_time
     start_time = time.time()
     setup_logger()
-    
+    db_result_queue = Queue() 
+
     # Start transfer execution thread
     transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,db_result_queue,))
     transfer_thread.daemon = True
