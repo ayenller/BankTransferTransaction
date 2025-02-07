@@ -3,12 +3,12 @@ import sys
 from datetime import datetime, timedelta
 import time
 import asyncio
-import queue
+# import queue
 import multiprocessing
 import threading
 import signal
 import atexit
-from queue import Queue, Empty
+from multiprocessing import Queue, Empty
 
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
