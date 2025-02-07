@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import time
 import asyncio
 import queue
-import threading
+import multiprocessing
 import signal
 import atexit
 from queue import Queue, Empty
@@ -22,12 +22,12 @@ from app.logger import setup_logger, log_error
 from utils.format_utils import format_transfer_line, print_transfer_header
 from utils.queue_utils import db_result_queue
 
-stop_event = threading.Event()
+stop_event = multiprocessing.Event()
 transfer_stats = {'successful': 0, 'failed': 0}
-# stats_lock = threading.Lock()
+# stats_lock = multiprocessing.Lock()
 connection_retry_delay = 5  # seconds
 connection_status = {'is_connected': True}
-# connection_lock = threading.Lock()
+# connection_lock = multiprocessing.Lock()
 
 def signal_handler(signum, frame):
     stop_event.set()
@@ -193,7 +193,7 @@ def print_transfer_status():
         try:
             print("#1-1#")
             time.sleep(1)
-            # threading.Event().wait(timeout=1)
+            # multiprocessing.Event().wait(timeout=1)
             print("#1-2#")
         except Exception as e:
             print("#1-3#")
@@ -333,12 +333,12 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     
     # Start transfer execution thread
-    transfer_thread = threading.Thread(target=execute_transfers, args=(host,))
+    transfer_thread = multiprocessing.Thread(target=execute_transfers, args=(host,))
     transfer_thread.daemon = True
     transfer_thread.start()
     
     # Start status printing thread
-    # printer_thread = threading.Thread(target=print_transfer_status)
+    # printer_thread = multiprocessing.Thread(target=print_transfer_status)
     # printer_thread.daemon = True
     # printer_thread.start()
     
