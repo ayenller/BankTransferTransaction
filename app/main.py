@@ -90,7 +90,7 @@ def get_latest_transaction(cursor):
     except Exception as e:
         print(f"Error in get latest transaction: {str(e)}")
 
-def execute_transfers(host):
+def execute_transfers(host, db_result_queue):
     """Thread function to execute transfers"""
     try:
         while not stop_event.is_set():
@@ -184,7 +184,7 @@ def execute_transfers(host):
         print(f"Error in transfer thread: {str(e)}")
         stop_event.set()
 
-def print_transfer_status():
+def print_transfer_status(db_result_queue):
     """Thread function to print transfer status"""
     current_second = 0
     
@@ -334,12 +334,12 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     
     # Start transfer execution thread
-    transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,))
+    transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,db_result_queue,))
     transfer_thread.daemon = True
     transfer_thread.start()
     
     # Start status printing thread
-    printer_thread = multiprocessing.Process(target=print_transfer_status)
+    printer_thread = multiprocessing.Process(target=print_transfer_status, args=(db_result_queue,))
     printer_thread.daemon = True
     printer_thread.start()
     
