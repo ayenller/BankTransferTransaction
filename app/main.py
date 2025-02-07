@@ -5,6 +5,7 @@ import time
 import asyncio
 import queue
 import multiprocessing
+import threading
 import signal
 import atexit
 from queue import Queue, Empty
@@ -333,14 +334,14 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     
     # Start transfer execution thread
-    transfer_thread = multiprocessing.Thread(target=execute_transfers, args=(host,))
+    transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,))
     transfer_thread.daemon = True
     transfer_thread.start()
     
     # Start status printing thread
-    # printer_thread = multiprocessing.Thread(target=print_transfer_status)
-    # printer_thread.daemon = True
-    # printer_thread.start()
+    printer_thread = multiprocessing.Process(target=print_transfer_status)
+    printer_thread.daemon = True
+    printer_thread.start()
     
     # Wait for specified duration
     try:
