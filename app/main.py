@@ -5,7 +5,6 @@ import time
 import asyncio
 # import queue
 import multiprocessing
-import threading
 import signal
 import atexit
 
@@ -90,7 +89,7 @@ def get_latest_transaction(cursor):
         print(f"Error in get latest transaction: {str(e)}")
 
 def execute_transfers(host, db_result_queue):
-    """Thread function to execute transfers"""
+    """multiprocessing function to execute transfers"""
     try:
         while not stop_event.is_set():
             time.sleep(1)
@@ -161,11 +160,11 @@ def execute_transfers(host, db_result_queue):
                 continue
 
     except Exception as e:
-        print(f"Error in transfer thread: {str(e)}")
+        print(f"Error in transfer multiprocessing: {str(e)}")
         stop_event.set()
 
 def print_transfer_status(db_result_queue):
-    """Thread function to print transfer status"""
+    """multiprocessing function to print transfer status"""
     current_second = 0
     
     while not stop_event.is_set():
@@ -299,21 +298,21 @@ def main(duration_minutes=1, host=None):
     setup_logger()
     db_result_queue = multiprocessing.Queue() 
 
-    # Start transfer execution thread
-    transfer_thread = multiprocessing.Process(target=execute_transfers, args=(host,db_result_queue,))
-    transfer_thread.daemon = True
-    transfer_thread.start()
+    # Start transfer execution multiprocessing
+    transfer_multiprocessing = multiprocessing.Process(target=execute_transfers, args=(host,db_result_queue,))
+    transfer_multiprocessing.daemon = True
+    transfer_multiprocessing.start()
     
-    # Start status printing thread
-    printer_thread = multiprocessing.Process(target=print_transfer_status, args=(db_result_queue,))
-    printer_thread.daemon = True
-    printer_thread.start()
+    # Start status printing multiprocessing
+    printer_multiprocessing = multiprocessing.Process(target=print_transfer_status, args=(db_result_queue,))
+    printer_multiprocessing.daemon = True
+    printer_multiprocessing.start()
     
     # Wait for specified duration
     try:
         time.sleep(duration_minutes * 60)
         stop_event.set()
-        time.sleep(2)  # Wait for threads to finish
+        time.sleep(2)  # Wait for multiprocessings to finish
         print_summary(time.time() - start_time)
     except KeyboardInterrupt:
         stop_event.set()

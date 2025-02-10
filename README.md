@@ -5,7 +5,7 @@ A Python-based command-line application for simulating bank transfers using TiDB
 ## Features
 
 - Real-time transfer execution and monitoring
-- Concurrent transfer processing with multi-threading
+- Concurrent transfer processing with multi-processing
 - Live transaction status display
 - Automatic database reconnection
 - Comprehensive error handling
